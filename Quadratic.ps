@@ -1,0 +1,56 @@
+%!PS
+%%BoundingBox: 0 0 595 842
+
+/latitude 35.0 def
+/sin_lat latitude sin def
+/cos_lat latitude cos def
+/x0 54.0 def
+/z0 395.0 def
+/y_limit 55.0 def
+/quadratic {
+	4 div % tan_s t
+	z0 % tan_s t z0
+	2 index 2 index % tan_s t z0 tan_s t
+	cos mul sin_lat mul cos_lat add div	% tan_s t u
+	0 index 3 index 3 index cos mul cos_lat mul sin_lat sub mul % tan_s t u x
+	exch  % tan_s t x u
+	% 2 index == dup ==
+	3 index mul 2 index sin mul  % tan_s t x y
+	lineto   % tan_s t
+	pop
+} def	% 0 0 moveto tan_s t quadratic
+/tan_s z0 sin_lat mul x0 cos_lat mul add z0 cos_lat mul x0 sin_lat mul sub div def
+
+/draw_curve {
+	newpath
+	x0 y_limit moveto
+	x0 neg y_limit lineto
+	x0 neg y_limit neg lineto
+	x0 y_limit neg lineto
+	stroke
+
+	tan_s
+		newpath x0 0 moveto  1  1  50 /quadratic load for stroke
+		newpath x0 0 moveto -1 -1 -50 /quadratic load for stroke
+	pop
+} def
+
+a4
+
+72 25.4 div dup scale
+0.3 setlinewidth
+
+gsave
+210 2 div 297 0.25 mul translate
+draw_curve
+grestore
+
+gsave
+210 2 div 297 0.75 mul translate
+draw_curve
+grestore
+
+showpage
+
+quit
+

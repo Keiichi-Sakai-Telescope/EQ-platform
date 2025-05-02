@@ -1,0 +1,155 @@
+
+scale=20
+pi=3.141592653589793238462643383279
+
+rod_r=0	# 24/2
+l0=312		# [mm] length of linear actuator at center point
+stop=1800	# [sec]
+start=-stop-120	# [sec]
+latitude=a(300/425)	# [radian]
+
+# coordinate of pivot on fixed base plate
+l1=l0/2-1
+offset1=2
+w1=-s(latitude)*l1+c(latitude)*offset1
+h1=-c(latitude)*l1-s(latitude)*offset1
+d1=450-90/2-1
+#d1=450-100/2+3.5
+#d1=450-100/2-24-1-1.8
+
+# coordinate of pivot on moving plate
+l2=l0/2-1
+offset2=offset1
+w2=s(latitude)*l2-c(latitude)*offset2
+h2=c(latitude)*l2+s(latitude)*offset2
+d2=d1
+
+# normal vector for fixed base base
+# (w, h, d) = (s(latitude), c(latitude), 0)
+normal_w = s(latitude);
+normal_h = c(latitude);
+normal_d = 0
+
+# normal vector for moving plate at center point
+# (w, h, d) = (s(latitude), c(latitude), 0)
+
+pitch=1.75
+#gear_ratio=36/8*36/14*36/14*36/14*36/14 * 70/12       # 196.7480216568 6速ギヤボックスHE 4段目 + 70T:12T 
+gear_ratio=36/8*36/14*36/14*36/14*36/14*36/14 * 70/12 # 505.9234842603 6速ギヤボックスHE 5段目 + 70T:12T 
+#gear_ratio=28*36/12*36/14 * 70/12                     # 216            4速ウォームギヤボックスHE
+#gear_ratio=28*36/12*36/14*36/14 * 70/12               # 555.4285714285 4速ウォームギヤボックスHE
+
+delta=3	# [sec], 5, 4, 3, 2, 1
+
+omega=2.0*pi/86164.09053	# [radian/sec]
+rod_w=w2-w1
+sqr_w1_w2=rod_w*rod_w
+
+define lt(time){
+	auto	omega_t, ht, dt, normal_ht, normal_dt, ip, rod_ht, rod_dt, total_lt, tan_mt, cos_omega_t, sin_omega_t;
+
+	omega_t=omega*time;
+	cos_omega_t = c(omega_t);
+	sin_omega_t = s(omega_t);
+
+	# pivot point on moving plate
+	ht=h2*cos_omega_t - d2*sin_omega_t;
+	dt=h2*sin_omega_t + d2*cos_omega_t;
+
+	# normal vector of moving plate
+	normal_ht=normal_h*cos_omega_t;
+	normal_dt=normal_h*sin_omega_t;
+
+	# connecting rod
+	rod_ht=ht-h1;
+	rod_dt=dt-d1;
+
+	# total length
+	total_lt = sqrt(sqr_w1_w2 + rod_ht*rod_ht + rod_dt*rod_dt);
+
+	# scalar product of connecting rod and normal vector of moving plate
+	ip = rod_w*normal_w + rod_ht*normal_ht + rod_dt*normal_dt;
+#	cos_mt = ip/total_lt;
+#	tan_mt = sqrt(1.0 - cos_mt*cos_mt)/cos_mt;
+	tan_mt = sqrt(total_lt*total_lt - ip*ip)/ip;
+
+	angle_t=a(tan_mt);
+	uplift=rod_r*tan_mt;
+
+	# scalar product of connecting rod and normal vector of fixed plate
+	ip = rod_w*normal_w + rod_ht*normal_h + rod_dt*normal_d;
+	tan_mt = sqrt(total_lt*total_lt - ip*ip)/ip;
+	angle_b=a(tan_mt);
+
+	return (total_lt - uplift);
+}
+
+l_start=lt(start);
+l_stop=lt(stop);
+
+if(1){
+	# generate look-up table
+	scale=20;
+	rpm=gear_ratio*60*(lt(stop-delta)-lt(stop))/pitch/delta;
+	scale=0;
+	print "\tMOTOR_RE_260RA_2670\t\t", (rpm*100)/1, "\n";
+	scale=1;
+	print "; latitude: ",latitude*180/pi,"[deg]\n"
+	print "; length of linear actuator: ", l_start/1, "[mm] to ", l_stop/1, "[mm]\n"
+	print "LUT_UPDATE_PERIOD\tequ\t",delta,"\n";
+	print "REWIND_TIMEOUT\t\tequ\t600\n";
+
+	n=0
+	lp=l_start;
+	scale=0;
+	print "\t\t\t\t; ", start/1, "s, ";
+	scale=3;
+	print lp/1, "mm, uplift ", uplift/1, "mm\n";
+	for(time=start+delta; time <= stop; time += delta){
+		scale=20;
+		lc=lt(time);
+		rpm=gear_ratio*60*(lp-lc)/pitch/delta;
+		scale=0;
+		n += 1;
+		print "\tLUT_ENTRY\t", (rpm*10+0.5)/1, "\t; ", time/1, "s, ";
+		scale=3;
+		print lc/1, "mm, uplift ", uplift/1, "mm";
+		scale=1;
+		print ", top ", angle_t*180/pi, ", base ", angle_b*180/pi;
+		scale=3;
+		print ", ", rpm/1, "rpm\n";
+		scale=20;
+		lp=lc;
+	}
+
+	swing=l_start-l_stop
+	scale=1
+	print "\t\t\t; swing: ",swing/1,"mm\n";
+	scale=0
+	print "\t\t\t; duration: ",(stop-start)/60,"min ", ((stop-start)%60)/1, "sec\n";
+	print "\t\t\t; ",n," entries.\n";
+}else{
+	# generate data table
+	n=0
+	lp=l_start
+	print "#time\trpm\tlength\tuplift\ttop angle\tbottom angle\terror(+100sec)\terror(-100sec)\n";
+	for(time=start+delta; time <= stop; time += delta){
+		scale=20;
+		err_p=lt(time+100);
+		err_m=lt(time-100);
+		lc=lt(time);
+		err_p=lc-err_p;
+		err_m=err_m-lc;
+		rpm=gear_ratio*60*(lp-lc)/pitch/delta;
+		scale=0;
+		n += 1;
+		print time/1, "\t";
+		scale=6;
+		print rpm/1, "\t", lc/1, "\t", uplift/1, "\t";
+		print angle_t*180/pi, "\t", angle_b*180/pi, "\t";
+		print err_p/1, "\t", err_m/1, "\n";
+		scale=20;
+		lp=lc;
+	}
+}
+

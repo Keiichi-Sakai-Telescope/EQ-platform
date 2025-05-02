@@ -1,0 +1,91 @@
+
+
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ H                             L
+
+ 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ L H                            
+
+ 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+   L H                          
+
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1
+                           L H  
+
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+                             L H
+
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ H                             L
+
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ L H                            
+
+ 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+   L H                          
+
+sequence bit
+case1) last used location includes first occurence of 0-1 or 1-0 sequence
+case2) last used location cross boundary of eeprom when all sequence bits are same
+
+searching
+1) n = 0
+2) read eeprom[n] as adrs_L
+3) n = n + 1, goto 5 if n is over size of eeprom
+4) check sequence bit by (adrs_L ^ eeprom[n]), if the result is 0 goto 2
+5) read eeprom[n] as adrs_H and seq_bit_L, and save n as eeprom_adrs
+6) read eeprom[n+1] as seq_bit_H
+7) invert seq_bit_L
+
+n points to next location of last used,
+sequence bit corresponds to location n
+
+advance location
+1) advance location by eeprom_adrs++
+2) advance sequence bit by seq_bit_L = ^seq_bit_H
+3) read eeprom[n+1] as seq_bit_H
+
+						; advance location
+						incf	s3_eeprom_adrs,F		; n++
+
+						; advance sequence bit by seq_bit_L = ^seq_bit_H
+						comf	s3_sequence_bit_H,W
+						andlw	0x80
+						movwf	s3_sequence_bit_L
+
+						; read eeprom[n+1] as seq_bit_H
+						incf	s3_eeprom_adrs,W
+						movwf	s3_EEADRL				; is equal to n+1
+						bsf		s3_EECON1,RD
+						movf	s3_EEDATL,W
+						andlw	0x80
+						movwf	s3_sequence_bit_H		; sequence_bit_H = eeprom[n+1]
+
+update
+return if EECON1,WR is set
+if H update flag is set)
+	increment eeprom_adrs
+	update H with address_lut_work_H with sequence bit
+	drop H update flag
+	return
+if L update flag is set)
+	update L with address_lut_work_L with sequence bit
+	drop L update flag
+	return
+if no update flag is set)
+	if notification_flag.BIT_UPDATE_LUT_INDEX is set,
+		update address_lut_work with sequence bit
+		set H update flag when eeprom[eeprom_adrs+1] is not equal to address_lut_work_H
+		set L update flag when eeprom[eeprom_adrs] is not equal to address_lut_work_L
+		clear sequence bit
+		goto top
+	return
+
+clear notification_flag.BIT_UPDATE_LUT_INDEX at caller
+
+a) if H is same with last write.
+a-1) L is only updated.
+b) if H is differ from last write.
+b-1) H is written into H+1 position.
+b-2) L is written into H position.
+

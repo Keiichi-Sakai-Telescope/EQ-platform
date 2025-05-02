@@ -1,0 +1,59 @@
+
+scale=20
+pi=3.141592653589793238462643383279
+sd=86164.09053		# [sec/sidereal day]
+
+delta=4		# [sec], 5, 4, 3, 2, 1
+t_start=-1920
+t_end=1920
+r_min=700
+screw_pitch=1.75	# [mm/rotation]	screw pitch
+gear_ratio=36/8*36/14*36/14*36/14*36/14*40/12	# [1]		
+#gear_ratio=36/8*36/14*36/14*36/14*36/14*40/16	# [1]		
+duration=t_end-t_start		# [sec]		duration
+
+a0=delta/sd*pi;
+l0 = r_min*s(a0)/c(a0);
+rpm = (2*l0)/screw_pitch/(delta/60)*gear_ratio;
+scale=0;
+print "\tMOTOR_RE_260RA_2670\t\t",(rpm*100)/1,"\n";
+print "; Settings:\n";
+print ";\tt_start = ", t_start, "\t# [sec]\n";
+print ";\tt_end = ", t_end, "\t# [sec]\n";
+print ";\tr_min = ", r_min, "\t# [mm]\n";
+print ";\tscrew_pitch = ", screw_pitch, "\t# [mm/rotation]\n";
+print ";\tgear_ratio = ", gear_ratio, "\t# [1]\n";
+print ";\tduration = ", duration, "\t# [sec]\n";
+
+# generate look-up table
+scale=2;
+print "LUT_UPDATE_PERIOD\tset\t",delta,"\n";
+print "REWIND_TIMEOUT\t\tequ\t600\n";
+
+n = -1;
+l0=0
+for(t1 = t_start; t1 <= t_end; t1 += delta){
+	scale=20;
+	a1=t1/sd*2.0*pi;
+	l1 = r_min*s(a1)/c(a1);
+
+	rpm = (l1-l0)/screw_pitch/(delta/60)*gear_ratio;
+
+	scale=0;
+	if(n < 0){
+		print "\t\t\t\t; ", t1/1, "s, ";
+		scale=3;
+		print l1/1, "mm\n";
+	}else{
+		print "\tLUT_ENTRY\t", (rpm*10+0.5)/1, "\t; ", t1/1, "s, ";
+		scale=3;
+		print l1/1, "mm, ", rpm/1, "rpm\n";
+	}
+
+	n += 1;
+	l0 = l1;
+}
+
+scale=0
+print "\t\t\t; ",n," entries.\n";
+

@@ -1,0 +1,143 @@
+
+scale=20
+pi=3.141592653589793238462643383279
+sd=86164.09053		# [sec/sidereal day]
+
+l_fixed=20
+x_fixed=150
+
+l_start=37+5		# [mm]		length of linear actuator at initial point
+r_fixed=sqrt(l_fixed^2+x_fixed^2)		# [mm]		radius for fixed point
+r_moving=sqrt((l_fixed+l_start)^2+x_fixed^2)		# [mm]		radius for moving point
+screw_pitch=2.88	# [mm/rotation]	screw pitch
+gear_ratio=5402.25	# [1]		
+duration=3600		# [sec]		duration
+delta=5		# [sec], 5, 4, 3, 2, 1
+
+print "; Settings:\n";
+print ";\tl_fixed = ", l_fixed, "\t# [mm]\n";
+print ";\tx_fixed = ", x_fixed, "\t# [mm]\n";
+print ";\tl_start = ", l_start, "\t# [mm]\n";
+print ";\tr_fixed = ", r_fixed, "\t# [mm]\n";
+print ";\tr_moving = ", r_moving, "\t# [mm]\n";
+print ";\tscrew_pitch = ", screw_pitch, "\t# [mm/rotation]\n";
+print ";\tgear_ratio = ", gear_ratio, "\t# [1]\n";
+print ";\tduration = ", duration, "\t# [sec]\n";
+
+define acos(cos_x)
+{
+	auto	sin_x, x, tan_x;
+
+	if(cos_x > 1.0) cos_x = 1;
+	if(cos_x < -1.0) cos_x = -1;
+
+	sin_x = sqrt(1-cos_x*cos_x);
+	if(sin_x < 0.7){
+		x = a(sin_x/cos_x);
+		if(x < 0) x += pi;
+	} else {
+		x = pi/2 - a(cos_x/sin_x);
+	}
+	return x;
+}
+define max(a,b)
+{
+	if(a > b) return a;
+	return b;
+}
+define min(a,b)
+{
+	if(a < b) return a;
+	return b;
+}
+
+x_fixed = (r_fixed*r_fixed + r_moving*r_moving - l_start*l_start)/2.0/r_moving;
+y_fixed = -sqrt(r_fixed*r_fixed - x_fixed*x_fixed);
+
+t0 = 0;
+x0 = r_moving;
+y0 = 0;
+l0 = sqrt((x_fixed-x0)^2 + (y_fixed-y0)^2);
+
+x_end = r_moving*c(duration/sd*2.0*pi);
+y_end = r_moving*s(duration/sd*2.0*pi);
+l_end = sqrt((x_fixed-x_end)^2 + (y_fixed-y_end)^2);
+
+travel = l_end-l0
+rpm_mean = travel/screw_pitch/(duration/60)*gear_ratio
+
+a2=r_fixed*r_fixed-travel*travel/4
+print ";\trecalculation l0 = ",l0,", l_start= ",l_start,"\n";
+print ";\tFYI. minimum swing is given at r_moving = ", sqrt(a2 + (travel/2+l_start)*(travel/2+l_start)), "mm\n";
+
+x1 = r_moving*c(delta/sd*2.0*pi);
+y1 = r_moving*s(delta/sd*2.0*pi);
+x_chord = x1 - x_fixed;
+y_chord = y1 - y_fixed;
+l1 = sqrt(x_chord*x_chord + y_chord*y_chord);
+
+rpm = (l1-l0)/screw_pitch/(delta/60)*gear_ratio;
+
+scale=0
+print "\tMOTOR_FA_130RA_2270\t\t",(rpm*100)/1,"\n";
+
+# generate look-up table
+scale=2;
+print "LUT_UPDATE_PERIOD\tequ\t",delta,"\n";
+print "REWIND_TIMEOUT\t\tequ\t600\n";
+
+rpm_min = 99999;
+rpm_max = 0;
+a_fixed_min = 180;
+a_fixed_max = 0;
+a_moving_min = 180;
+a_moving_max = 0;
+
+n=-1
+for(t1=t0; t1 <= duration; t1 += delta){
+	scale=20;
+	x1 = r_moving*c(t1/sd*2.0*pi);
+	y1 = r_moving*s(t1/sd*2.0*pi);
+	x_chord = x1 - x_fixed;
+	y_chord = y1 - y_fixed;
+	l1 = sqrt(x_chord*x_chord + y_chord*y_chord);
+
+	rpm = (l1-l0)/screw_pitch/(delta/60)*gear_ratio;
+	a_fixed = acos((x_fixed*x_chord + y_fixed*y_chord)/r_fixed/l1) *180/pi;
+	a_moving = acos((x1*x_chord + y1*y_chord)/r_moving/l1) *180/pi;
+	if(n >= 0){
+		rpm_min = min(rpm_min,rpm);
+		rpm_max = max(rpm_max,rpm);
+	}
+	a_fixed_min = min(a_fixed_min,a_fixed);
+	a_fixed_max = max(a_fixed_max,a_fixed);
+	a_moving_min = min(a_moving_min,a_moving);
+	a_moving_max = max(a_moving_max,a_moving);
+
+	scale=0;
+	if(n < 0){
+		print "\t\t\t\t;  ", t1/1, "s, ";
+		scale=3;
+		print l1/1, "mm,                          ", a_fixed/1, "deg, ", a_moving/1, "deg\n";
+	}else{
+		print "\tLUT_ENTRY\t", (rpm*10+0.5)/1, "\t; ", t1/1, "s, ";
+		scale=3;
+		print l0/1, "mm -> ", l1/1, "mm, ", rpm/1, "rpm, ", a_fixed/1, "deg, ", a_moving/1, "deg\n";
+	}
+	n += 1;
+
+	x0 = x1;
+	y0 = y1;
+	l0 = l1;
+	t0 = t1;
+}
+
+scale=1
+print "; length of linear actuator: ", (l_start + 0.05)/1, "mm to ", (l_end + 0.05)/1, "mm, travel = ", (travel + 0.05)/1,"mm\n";
+print "; range of angle(fixed point): ",  (a_fixed_min + 0.05)/1,"deg to ",  (a_fixed_max + 0.05)/1,"deg, swing = ",  (a_fixed_max - a_fixed_min + 0.05)/1,"deg\n";
+print "; range of angle(moving point): ", (a_moving_min + 0.05)/1,"deg to ", (a_moving_max + 0.05)/1,"deg, swing = ", (a_moving_max - a_moving_min + 0.05)/1,"deg\n";
+scale=2
+print "; motor speed: ", (rpm_min + 0.005)/1,"rpm to ", (rpm_max + 0.005)/1,"rpm, mean = ", (rpm_mean + 0.005)/1,"rpm\n";
+scale=0
+print "\t\t\t; ",n," entries.\n";
+

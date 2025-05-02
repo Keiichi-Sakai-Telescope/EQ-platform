@@ -1,0 +1,1918 @@
+☆ 極軸回転
+86164.09053[sec/rev]
+1.00273790935[rev/86400sec]
+
+☆ ケース
+		外形		値段		有効内寸		蓋の縁
+	W	H	D		W	H	D	W	H	D
+SW-30	20	18	30	110円	16	14.2	26	14.8	3	24.6
+SW-40	30	20	40	110円	26	16.2	36	22.8	3	32.8
+TB-39	30	30	40	177円	26		36
+
+蓋の縁に基板を乗せるとしたら、底面から基板表面が6.5mm。
+
+TB-39は基板用スペーサがある。対角15x25にM3用穴があり、高さ5mmなので、基板上は19.5mm。
+
+TL1265スイッチの基板面からの高さは、凸先端で12mm凸の中段で8.5mm。
+
+D6R+LEDのほうが安いし、基板のサポートが不要で楽そうなんだが。
+D6Rスイッチの基板面からの高さは、凸先端で14.3mm凸の中段で7.3mm。
+
+ダイオードとLEDを逆並列に接続し、コンデンサ経由でBTL駆動する。
+Q=C*(V*2-(1.8+0.6))
+I=Q*f=f*C*(V*2-2.4)
+f=I/C/(V*2-2.4)
+V=1.8, I=1.2mA では 1.2 = f*C*1.2 より f*C = 1 なので、
+C = 0.1uF, f = 10kHz となる。
+plot [1.8:5.4] 1.2/0.1/(x*2-2.4)
+
+ミヤマDS-102とマル信MJ-355Wを使うとスペーサー無しで基板を固定可能。
+RSではそれぞれ164円と128円。けっこうする。
+マルツでは111円と94円。
+
+タクトスイッチにかぶせてスイッチの保護と長さの延長
+岩田製作所 キャップD
+
+大陽ステンレススプリング スペーサー(鉄/三価ホワイト)(パック品)
+	巻きスペーサーで、木ネジに合わせて選べる。
+	内径: 2, 2.3, 2.6, 3, 4, 5, 6, 8, 10
+
+大阪魂 (+)丸木ねじ(ステンレス)(小箱)
+	M2.1, M2.4, M2.7,...
+
+ナベタッピンねじ 2種溝付B-1形
+
+☆ MCU
+PIC16F1825
+1.8-5.5V
+20uA
+
+☆ FET
+N-MOSではQgd+Qgs=1nCくらいで、P-MOSでは同3nCくらい。
+PICの駆動能力はIoh=-2mA@1.8V、Iol=6mA@1.8Vくらいなので、P-MOSのゲートを
+動かすにはちょっと重い。3Vなら-8mA/20mAなので問題ない。
+
+1.8V時のスイッチング時間が1usでも、 1/2*2V*1us*2A*1000Hz=2mW なので問題ない？
+Vdsの低下に伴い、Qgdも低下するっぽい。AO3413の場合、2Vあれば1ピン駆動で問題ない。
+
+Qg=3nC前後のものがある。P-MOSも若干Rdsが大きいのを我慢すれば存在する。
+Rdsが3倍になるか、Qgが3倍になるか、いずれかの選択っぽい。LVC1G04で駆動する。
+SOT-23-5 = SOT-25 = SOT-753 0.95mmピッチ
+
+single N-MOS
+	AO3414
+	BSS806N	QgがAO3414より小さい。スイッチング速度的にはそれほど気にすることはない。
+
+single P-MOS
+	AO3413	Rds=140mΩmax.@-1.8V Qg=11nCmax.@4.5V
+			gon/goffはゲート波形
+		1-pin@1.8V	tr=120ns gon=500ns tf=500ns goff=1.4us
+			Vplateu=-1.1V おおむね120ns後にVth=-0.65Vに達していると思われる波形。
+		1-pin@2.06V			tf=300ns goff=1000us けっこう違う。
+		1-pin@2.8V	tr=50ns gon=300ns tf=200ns goff=800ns
+		1-pin@3.8V	tr=25ns gon=250ns tf=100ns goff=600ns
+
+		3-pin@1.7V	Vgs tr=213ns tf=420ns Vds tr=37ns tf=140ns
+		3-pin@1.8V	Vgs tr=170ns tf=390ns Vds tr=27ns tf=120ns
+		3-pin@1.9V	Vgs tr=160ns tf=360ns Vds tr=25ns tf=103ns
+		3-pin@2.0V	Vgs tr=150ns tf=340ns Vds tr=23ns tf=92ns
+		3-pin@2.2V	Vgs tr=145ns tf=280ns Vds tr=20ns tf=75ns
+		3-pin@2.4V	Vgs tr=120ns tf=262ns Vds tr=20ns tf=66ns
+		3-pin@2.6V	Vgs tr=110ns tf=240ns Vds tr=19ns tf=58ns
+		3-pin@2.8V	Vgs tr=105ns tf=232ns Vds tr=17ns tf=55ns
+		3-pin@3.0V	Vgs tr=103ns tf=222ns Vds tr=18ns tf=50ns
+		2-pin@3.2V	Vgs tr=130ns tf=288ns Vds tr=19ns tf=65ns
+		2-pin@3.5V	Vgs tr=130ns tf=275ns Vds tr=18ns tf=60ns
+		2-pin@4.0V	Vgs tr=110ns tf=257ns Vds tr=17ns tf=54ns
+		2-pin@4.5V	Vgs tr=100ns tf=244ns Vds tr=16ns tf=50ns
+		1-pin@5.0V	Vgs tr=147ns tf=390ns Vds tr=19ns tf=75ns
+		1-pin@5.5V	Vgs tr=146ns tf=385ns Vds tr=18ns tf=70ns
+		1-pin@6.0V	Vgs tr=138ns tf=360ns Vds tr=18ns tf=66ns
+		1-pin@6.5V	Vgs tr=135ns tf=320ns Vds tr=18ns tf=63ns
+
+		2-pin@5.0V	Vgs tf=223ns Vds tf=46ns
+		2-pin@5.5V	Vgs tf=210ns Vds tf=45ns
+		2-pin@6.0V	Vgs tf=154ns Vds tf=43ns
+
+	DMP2160U Rds=140mΩmax.@-1.8V Qg=6.5nCtyp.@4.5V
+	DMP2305U Rds=113mΩmax.@-1.8V Qg=7.6nCtyp.@4.5V
+	AO3435 Rds=110mΩmax.@-1.8V Qg=11nCmax.@4.5V
+	DMG3415U Rds=71mΩmax.@-1.8V Qg=9.1nCtyp.@4.5V
+	AO3415A Rds=65mΩmax.@-1.8V Qg=11nCmax.@4.5V
+	SSM3J321T Rds=88mΩmax.@-1.8V Qg=8.1nCtyp.@4.5V
+
+☆ 電源
+AA×3
+動作範囲は1本あたり0.9Vから1.8Vを想定し、2.7-5.4Vで動かす。6.5Vが絶対最大定格。
+3本あたり2.7Vを下回るとBORにより自動停止。
+HS発振器が2.7V以下では4MHzでもOKだけど、x4 PLLは2.7V以上必要？？？動くけど。
+4MHzで動くプログラムを書くか、2.7V以上で使うか。
+
+		100kHz		120Hz		120Hz		120Hz
+	20℃	-10℃		Z-25℃/Z20℃	Z-40℃/Z20℃	Z-55℃/Z20℃
+FC	1	2
+FM	1	2.5
+FR	1	2.5
+HW	1	3		2		3
+KZE	1	3		2		3
+PA	1	2						3
+PW	1	2						3
+ZLH	1	3		2		3
+ZLJ	1	3		2		3
+
+HN	1			3					discon
+HM	1					3			discon
+HZ	1			3					discon
+HE	1	3.5		4		8
+
+6.3V 3900uF Rubycon ZLH 17mΩ D12.5-L22 79円 汎用品と比べてもそう高くない。
+静電容量が必要ではあるが、インピーダンスの低さも重要。
+0.2Vの変動がOKならほどほどでもよいが。
+
+デューティーが25%、平均電流0.2A、1kHzのとき、1周期で0.2mCの電荷が移動する。
+このとき、Tonの間は電源から0.05mC、コンデンサから0.15mCの電荷が供給される。
+つまり、電源のインピーダンスが高い時、キャパシタが1mFのときは0.15Vの電圧変動になる。
+ピーク電流は1.6Aになるので、ESRも重要。
+
+☆ モーター
+ミニモーター
+RE-260
+RC-260
+FA-130
+0.001uF(1nF)をフィルタ用に追加すること。
+
+Lは巻線のインダクタンス、Vfは還流ダイオードの順方向電圧、電圧がx、誘起電圧がy、
+としたときの検出限界の電流値をzとしてプロット。
+L=0.34;Vf=0.35;splot [2.7:5.4] [0:0.3] (x-y)/L*(Vf+y)/(Vf+x)*0.512,(x-y)/L*(Vf+y)/(Vf+x)*2.048,(x-y)/L*(Vf+y)/(Vf+x)*1.024,(x-y)/L*(Vf+y)/(Vf+x)*4.096
+周期T=0.512は4883rpm		Fosc=32MHzでの最高回転数
+周期T=1.024は2441rpm 		Fosc=16MHzでの最高回転数
+周期T=2.048は1221rpm		Fosc=32MHzでの最低回転数
+周期T=4.096は610rpm		Fosc=16MHzでの最低回転数
+回転数が低いほど、つまり誘起電圧が低いほどトルクが出ない。
+周期Tが短いほど、つまりインダクタ電流のピークが低いほどトルクが出ない。
+恒星時追尾に合わせた周期を設定し、2倍速時に誘起電圧だけを2倍にする分には問題ない。
+Vfが大きいほど巻線のエネルギが速く放出されて、早く測定できるようになるので、電流が増える。
+ダイオードによる回生が減る分、消費電力は増えるのか？どうかは計算してない。
+
+インダクタンスや無負荷回転数からモーターの平均電流を計算。ただし、目安でしかない。
+1) 24pulse/revの場合
+T2の周期T=4.096で計算。610rpm(Fosc=16MHzでの最低回転数)
+L=1.2;Vf=0.35;k=1.5/4450;splot [2.7:5.4] [610:2800]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'mini'
+
+誘導電圧下限0.2Vで計算
+L=0.34;Vf=0.35;k=1.5/11000;splot [2.7:5.4] [1450:3280] [0.66:1.26]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'FA-130 0.66A(6.0g-cm@1.5V)'
+L=0.34;Vf=0.35;k=1.5/11000;splot [2.7:5.4] [1450:1910] [0.94:1.26]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'FA-130 0.94A(9.1g-cm@3V)'
+L=0.34;Vf=0.35;k=1.5/11000;splot [2.7:5.4] [1450:1520] [1.1:1.26]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'FA-130 1.1A(10g-cm)'
+L=0.14;Vf=0.35;k=1.5/10700;splot [2.7:5.4] [1400:5180] [1.2:3.2] (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'Torque Tuned 1.2A(10g-cm)'
+L=0.05;Vf=0.35;k=1.5/17000;splot [2.7:5.4] [2300:11200] [1.67:5.5] (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'Power Dash 1.67A(10g-cm)'
+L=0.05;Vf=0.35;k=1.5/17000;splot [2.7:5.4] [2300:6400] [2.5:5.5] (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'Power Dash 2.5A(15g-cm)'
+
+L=0.34;Vf=0.35;k=1.5/7300;splot [2.7:5.4] [1000:4190] [0.64:1.85] (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'RE-260 0.64A(10g-cm@1.5V)'
+L=0.34;Vf=0.35;k=1.5/7300;splot [2.7:5.4] [1000:2500] [0.91:1.85] (x-k*y)/L*(Vf+k*y)/(Vf+x)*1250/y title 'RE-260 0.91A(15g-cm@3V)'
+
+2) 18pulse/revの場合
+回転数範囲
+T2CKPS==3, 4000000/256/64/0.3 = 813.8020833333rpm 〜 4000000/64/64/0.3 = 3255.2083333333rpm
+T2CKPS==2, 4000000/64/64/0.3 = 3255.2083333333rpm 〜 4000000/16/64/0.3 = 13020.8333333333rpm
+
+誘導電圧下限0.2Vで計算
+L=1.2;Vf=0.35;k=1.5/4450;splot [2.7:5.4] [590:3700] [0.28:1.17] (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'mini'
+L=1.2;Vf=0.35;k=1.5/4450;splot [1.8:3.6] [590:2600] [0.28:1.12] (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'mini'
+
+L=0.34;Vf=0.35;k=1.5/11000;splot [1.8:5.4] [1450:2860] [0.83:1.68]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'FA-130 0.83A(8.2g-cm@3V)'
+L=0.34;Vf=0.35;k=1.5/11000;splot [2.7:5.4] [1450:3600] [0.83:1.68]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'FA-130 0.83A(8.2g-cm@3V)'
+L=0.34;Vf=0.35;k=1.5/11000;splot [2.7:5.4] [1450:2950] [0.94:1.68]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'FA-130 0.94A(9.1g-cm@3V)'
+L=0.34;Vf=0.35;k=1.5/11000;splot [1.8:5.4] [1450:1960] [1.1:1.68]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'FA-130 1.1A(10g-cm)'
+L=0.34;Vf=0.35;k=1.5/11000;splot [2.7:5.4] [1450:2320] [1.1:1.68]  (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'FA-130 1.1A(10g-cm)'
+L=0.14;Vf=0.35;k=1.5/10700;splot [2.7:5.4] [1400:7510] [1.2:4.25] (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'Torque Tuned 1.2A(10g-cm)'
+
+L=0.34;Vf=0.35;k=1.5/7300;splot [1.8:5.4] [1000:2840] [0.91:2.5] (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'RE-260 0.91A(15g-cm@3V)'
+L=0.34;Vf=0.35;k=1.5/7300;splot [2.7:5.4] [1000:3800] [0.91:2.5] (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'RE-260 0.91A(15g-cm@3V)'
+L=0.05;Vf=0.35;k=1.5/17000;splot [2.7:5.4] [2300:9500] [2.5:7.3] (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'Power Dash 2.5A(15g-cm)'
+
+L=1.2;Vf=0.35;k=1.5/2700;splot [2.7:5.4] [360:2350] [0.45:1.92] (x-k*y)/L*(Vf+k*y)/(Vf+x)*5000/3/y title 'RE-280-20120 24.7g-cm'
+
+		抵抗	Q	無負荷1V 2V	
+mini	1200uH	5.505Ω	Q1.47	0.08A	0.09A	ミニモーター多段12速
+mini	715	2830
+FA-130	340uH	0.682Ω	Q1.76	0.18A	0.23A	シングルギヤボックス4速
+Torque	145uH	0.33	Q2.28
+Power	49.7uH	0.17	Q1.60
+RE-260	340uH	0.586Ω	Q1.41	0.19A	0.25A	6速ギヤボックスHE
+RC-260	340uH	0.586Ω	Q1.38	0.24A	0.28A	遊星ギヤボックス 巻線仕様はRE-260と同等
+RE-280	1200uH	2.036	Q2.35
+RE-280	266uH	0.638	Q2.46
+
+Torque Tune Motor
+200mV	42.0  [ms/rev]
+300mV	55.8/2[ms/rev]
+400mV	42.2/2[ms/rev]
+500mV	51.2/3[ms/rev]
+600mV	56.8/4
+
+Power Dash Motor
+200mV	51/2
+300mV	51.8/3
+400mV	52.8/4
+500mV	52.2/5
+
+# RE-260
+# [mV]	[ms/rev]	[rpm]
+200mV	50.6*6/5	60.72	988
+300mV	41.0		41.0	1463
+400mV	30.8		30.8	1948
+500mV	49.2/2		24.6	2439
+600mV	41.6/2		20.8	2885
+708mV	52.8/3		17.6	3409
+802.4mV	46.8/3		15.6	3846
+
+500mV印加 250mA		 250mVトリガ
+1500mV印加 325mA		 1Vトリガ
+
+#FA-130RA
+# [mV]	[ms/rev]	[rpm]
+200mV	40.4
+300mV	54.0/2
+400mV	41.4/2
+500mV	49.4/3
+600mV	55.2/4
+700mV	47.0/4
+800mV	51.0/5
+
+#RC-260
+# [mV]	[ms/rev]	[rpm]
+200mV	49.8*6/5
+300mV	40.2
+400mV	30.6
+500mV	49.6/2
+600mV	41.2/2
+700mV	52.4/3
+800mV	45.6/3
+
+#mini
+# [mV]	[ms/rev]	[rpm]
+400mV	49.8
+608	33.0
+800	50.6/2
+1000	40.6/2
+1216	49.8/3
+1392	43.6/3
+1600	50.6/4
+
+
+0.2/1.5*rpm=rpm/7.5?
+
+W = g-cm * rpm / 97441.8
+
+mini	
+3.0V	5g-cm	0.28A	8250	50%
+FA-130
+1.5V	0.0g-cm	0.20A	9100	0%
+1.5V	6.0g-cm	0.66A	6990	43.4%☆
+1.5V	9.1g-cm	0.90A	5924	40.9%
+1.5V	14.9g-cm 1.35A	3890	29.4%
+1.5V	26.0g-cm 2.20A	0	0%
+3.0V	0.0g-cm	0.20A	18200	0%
+3.0V	6.0g-cm	0.69A	16095	48.2%
+3.0V	9.1g-cm	0.94A	15000	49.9%☆
+3.0V	14.9g-cm 1.40A	12990	47.1%
+3.0V	52.0g-cm 4.40A	0	0%
+current=torque*0.08+0.2
+voltage=rpm/6355+0.68*current
+RE-260
+1.5V	0g-cm	0.14A	6300	0%
+1.5V	6g-cm	0.45A	5541	50.8%
+1.5V	10g-cm	0.64A	5040	53.8%☆
+1.5V	14.9g-cm 0.88A	4423	51.4%
+1.5V	49.9g-cm 2.56A	0	0%
+3.0V	0g-cm	0.16A	12600	0%
+3.0V	6.0g-cm	0.46A	11841	53.1%
+3.0V	10g-cm	0.66A	11340	59.0%
+3.0V	15g-cm	0.91A	10710	60.7%☆
+3.0V	99.9g-cm 5.12A	0	0%
+current=torque*0.05+0.16
+voltage=rpm/4336+0.59*current
+
+☆ ギア
+タミヤのギアボックスのモジュールは0.5が多い。
+遊星ギアはバリをきれいに削ること。
+1:5をモーター寄りにするほうが静か。1:4は重心がずれてるので後段へ。
+
+☆ シャフト
+平行ピン
+ダウエルピン	+10um〜+5um(A型), +5um〜+0um(B型), 0um〜-5um(C型)
+エジェクタピン	-10um〜-20um
+ストリップボルト
+ギヤボックス付属	平径2.68mm前後、0.32mmの銅線を使うと滑り止めになる。
+
+カムフォロアー	CF6G, CF8G, CF10G が安い目。
+フランジ付プーリーアイドラー 安くはない。
+
+ベアファイトの穴 10mm に対して、軸の公差は -5um〜-20um (g7)
+h7の軸 10mm では、公差は +0um〜-15um
+
+
+☆ タミヤギヤボックス一覧
+
+70093 3速クランクギヤーボックス 
+38/8*42/12					= 16.625
+38/8*42/12*42/12				= 58.1875
+38/8*42/12*42/12*42/12				= 203.65625
+
+70103 ユニバーサルギヤーボックス 
+26/8*14/9*20					= 101.1111111100
+26/8*24/9*14/9*20				= 269.6296296260
+26/8*24/9*24/9*14/9*20				= 719.0123456720
+
+70110 4速クランクギヤー
+36*42/12					= 126
+36*42/12*42/12					= 441
+36*42/12*42/12*42/12				= 1543.5
+36*42/12*42/12*42/12*42/12			= 5402.25
+
+70167 シングルギヤボックス(4速タイプ) 
+34/8*36/12					= 12.75
+34/8*36/12*36/12				= 38.25
+34/8*36/12*36/12*36/12				= 114.75
+34/8*36/12*36/12*36/12*36/12			= 344.25
+
+70188 ミニモーター標準ギヤボックス （8速）
+24/10*21/13*22/10				= 8.5292307691
+24/9*21/13*22/10				= 9.4769230765
+24/10*21/13*21/10*22/10				= 17.9113846150
+24/9*21/13*21/10*22/10				= 19.9015384605
+24/10*21/13*21/10*21/10*22/10			= 37.6139076915
+24/9*21/13*21/10*21/10*22/10			= 41.7932307669
+24/10*21/13*21/10*21/10*21/10*22/10		= 78.9892061521
+24/9*21/13*21/10*21/10*21/10*22/10		= 87.7657846104
+
+70189 ミニモーター低速ギヤボックス （4速）
+17*21/11*22/10					= 71.4
+17*21/11*21/10*22/10				= 149.94
+17*21/11*21/10*21/10*22/10			= 314.874
+17*21/11*21/10*21/10*21/10*22/10		= 661.2354
+
+70190 ミニモーター多段ギヤボックス （12速）
+21/10*22/10					= 4.62
+21/9*22/10					= 5.1333333332
+21/10*21/10*22/10				= 9.702
+21/9*21/10*22/10				= 10.78
+21/10*21/10*21/10*22/10				= 20.3742
+21/9*21/10*21/10*22/10				= 22.638
+21/10*21/10*21/10*21/10*22/10			= 42.78582
+21/9*21/10*21/10*21/10*22/10			= 47.5398
+21/10*21/10*21/10*21/10*21/10*22/10		= 89.850222
+21/9*21/10*21/10*21/10*21/10*22/10		= 99.83358
+21/10*21/10*21/10*21/10*21/10*21/10*22/10	= 188.6854662
+21/9*21/10*21/10*21/10*21/10*21/10*22/10	= 209.650518
+
+72001 遊星ギャーボックスセット 
+4						= 4
+5						= 5
+4*4						= 16
+5*4						= 20
+5*5						= 25
+5*4*4						= 80
+5*5*4						= 100
+5*5*4*4						= 400
+
+72002 ハイスピードギヤーボックスHE 
+36/8*36/14					= 11.5714285714
+36/8*40/10					= 18
+
+72003 ハイパワーギヤーボックスHE 
+36/8*36/10*36/14				= 41.6571428571
+36/8*36/10*40/10				= 64.8
+
+72004 ウォームギヤーボックスHE 
+28*36/12*36/14					= 216
+28*36/12*40/10					= 336
+
+72005 6速ギヤボックスHE 
+36/8*36/14					= 11.5714285714
+36/8*36/14*36/14				= 29.7551020407
+36/8*36/14*36/14*36/14				= 76.5131195332
+36/8*36/14*36/14*36/14*36/14			= 196.7480216568
+36/8*36/14*36/14*36/14*36/14*36/14		= 505.9234842603
+36/8*36/14*36/14*36/14*36/14*36/14*36/14	= 1300.9461023836
+
+72007 4速パワーギヤボックスHE 			軸受け変えられそう？
+24/12*36/12*36/14*36/14				= 39.6734693875
+24/10*36/12*36/14*36/14				= 47.6081632650
+24/12*36/12*36/14*40/10				= 61.7142857140
+24/10*36/12*36/14*40/10				= 74.0571428568
+
+72008 4速ウォームギヤボックスHE 		軸受け変えられそう？
+28*36/12					= 84
+28*36/12*36/14					= 216
+28*36/12*36/14*36/14				= 555.4285714285
+28*36/12*36/14*36/14*36/14			= 1428.2448979590
+
+出力の軸受けのところの幅40mm
+軸カバーのところ47mm
+軸カバーが当たるまで左に寄せたら、右の出力は44mmの位置。
+出力軸とハウジング間は12.5-12.5-12.5と思っておくのが無難ポイ。
+
+RDO-501
+20/14*28/12*28/12 						= 7.7777777772
+20/14*28/12*28/12*28/12						= 18.1481481468
+20/14*28/12*28/12*28/12*28/12					= 42.3456790092
+20/14*28/12*28/12*28/12*28/12*28/12				= 98.8065843548
+20/14*28/12*28/12*28/12*28/12*28/12*28/12			= 230.5486968278
+20/14*28/12*28/12*28/12*28/12*28/12*28/12*28/12			= 537.9469592648
+20/14*28/12*28/12*28/12*28/12*28/12*28/12*28/12*28/12		= 1255.2095716178
+20/14*28/12*28/12*28/12*28/12*28/12*28/12*28/12*28/12*28/12	= 2928.8223337748
+
+☆ モジュール割り当て
+CCP1/T2		PWM Mode with Steering
+CCP3/T6		LED
+CCP4/T1		Special Event Trigger	-> ADC
+ADC		RC0電圧(AN4), RC1電圧(AN5), モーターの起電圧(AN6), DAC電圧(AN30)
+
+☆ ピン割り当て
+RA0 13	ICSPDAT			digital in ↑		追尾リミット
+RA1 12	ICSPCLK			digital in ↑		LUT初期化
+RA2 11	CCP3    		digital out	0
+RA3  4	MCLR	VPP	IOC    	digital in ↑
+RA4  3	OSC2			analog
+RA5  2	OSC1			analog
+RC0 10	RC0			analog in ↑		停止
+RC1  9	RC1			analog in ↑		2倍速
+RC2  8	AN6			analog			sense
+RC3  7	CCP2			digital out	1	gate
+RC4  6	RC4			digital out	1	gate
+RC5  5	RC5			digital out	1	gate
+VDD  1	VDD
+VSS 14	VSS
+
+以下original
+RA0 13 AN0 VREF- DACOUT CPS0 C1IN+ TX(1) CK(1) IOC ICSPDAT ICDDAT
+RA1 12 AN1 VREF+ ￼CPS1 C12IN0- SRI RX(1) DT(1) IOC ICSPCLK ICDCLK
+RA2 11 AN2 CPS2 C1OUT SRQ T0CKI CCP3 FLT0 INT/IOC
+RA3  4     T1G(1) SS1(1) IOC MCLR VPP
+RA4  3 AN3 CPS3 T1G(1) T1OSO P2B(1) SDO1(1) IOC OSC2 CLKOUT CLKR
+RA5  2     T1CKI T1OSI CCP2 P2A(1) IOC OSC1 CLKIN
+RC0 10 AN4 CPS4 C2IN+ P1D(1) SCL SCK
+RC1  9 AN5 CPS5 C12IN1- CCP4 P1C(1) SDA SDI
+RC2  8 AN6 CPS6 C12IN2- P1D(1) P2B(1) SDO1(1) MDCIN1
+RC3  7 AN7 CPS7 C12IN3- CCP2 P1C(1) P2A(1) SS1(1) MDMIN
+RC4  6     C2OUT SRNQ P1B TX(1) CK(1) MDOUT
+RC5  5     CCP1 P1A RX(1) DT(1) MDCIN2
+VDD  1     VDD
+VSS 14     VSS
+
+☆ 制御
+内ループ	誘導電圧と目標電圧の間でPI制御。制御対象はFETのON Duty。
+外ループ	起動以来の実測パルス数を目標パルス数にあわせるI制御。制御対象は目標電圧。
+
+☆ BOM (PMOS)
+# ------- Marutu -------------------------------------
+				Takachi SW-40					94
+1,"CN5","POWER",CN5 		Takachi SN3-3					105
+1,"CN3","MOTOR",CN3 
+1,"S1","MS-102",S1 		Miyama MS-102					111
+1,"CN4","MJ-355W",CN4 		Marushin MJ-355W				94
+# ------- DigiKey -------------------------------------
+1,"U2","PIC16F1824",U2 		PIC16F1825			SO-14		118.5
+1,"D2","C503C-WAN",D2 		WP3A8ID 25mcd@10mA		T1		9.0
+Spacer								T1		19.0
+1,"CN1","LIMIT",CN1 		ESE11						37.8*2
+1,"1","CONFIG",CN2		0933
+1,"ABLS3-4MHz","4MHz",X1 	18pF 4MHz			HC-49/US	27.1
+1,"PMEG3015EH","PMEG3015",D1 	PMEG3015EH 30V 1.5A		SOD-123F	32.0
+1,"R4","2.1",R4 		AIML-0603-4R7K			1608		5.6
+1,"R1","33K",R1 						1608		1.28
+1,"R2","100",R2 						1608		1.28
+1,"R3","1K",R3 			1kΩ=1V/1mA			1608		1.28
+1,"U1","1G04",U1 		LVC1G04				SOT23-5		19.2
+1,"Q1","AO3413",Q1 		100mΩ				SOT23		30.68
+1,"C2","4.7uF",C2 		4.7uF 6.3WV			1608		4.88
+1,"C1","4.7uF",C1 		4.7uF 6.3WV			1608		4.88
+1,"C3","22pF",C3 		24pF C0G 50WV			1608		3.4
+1,"C5","22pF",C5 		24pF C0G 50WV			1608		3.4
+1,"C4","1nF",C4 		1nF  C0G 50WV			1608		2.28
+1,"C6","2200uF",C6	 	2200uF 6.3WV 13mΩ		H20-D10		44.4
+
+
+94 +105 +111 +94 +118.5 +9.0 +19.0+37.8*2 +27.1 +32.0 +5.6 +1.28 +1.28 +1.28 +19.2 +30.68 +4.88 +4.88 +3.4 +3.4 +2.28 +44.4 = 807.76
+基板100円
+合わせて900円くらい？
+
+☆ BOM (minimal NMOS + reverse protection)
+# --------------------------------------------
+1,"1","CONFIG",CN2 
+1,"CN3","MOTOR",CN3 
+1,"1","CONTROL",CN4 
+1,"CN5","POWER",CN5 		Keystone 2463			AAx2		98.6
+1,"C1","1nF",C1 		1nF C0G 50WV			1608		2.28
+1,"C2","4.7uF",C2		4.7uF 6.3WV			1608		4.88
+1,"C3","4.7uF",C3		4.7uF 6.3WV			1608		4.88
+1,"C4","22pF",C4		24pF C0G 50WV			1608		3.4
+1,"C5","22pF",C5		24pF C0G 50WV			1608		3.4
+1,"C6","3900uF",C6 		3900uF 6.3WV 17mΩ Rubycon ZLH	H20-D12.5	61.8
+1,"ATS040B","4MHz",X1 		18pF 4MHz			HC-49/US	27.1
+1,"Q1","AO3414",Q1		100mΩ				SOT23		30.68
+1,"Q2","AO3414",Q2		100mΩ				SOT23		30.68
+1,"S1","EVQPAC09K",S1 								8.8
+1,"S2","ESE11HS2",S2 								43.2
+1,"PMEG3015EH","PMEG3015",D1 	PMEG3015EH 30V 1.5A		SOD-123F	32.0
+1,"D2","WP113SRDT",D2 								12.1
+1,"U1","PIC16F1824",U1 		PIC16F1825			SO-14		118.5
+1,"R1","100",R1							1608		1.28
+1,"R2","33K",R2							1608		1.28
+基板100円
+98.6+2.28+4.88+4.88+3.4+3.4+61.8+27.1+30.68+30.68+8.8+43.2+32.0+12.1+118.5+1.28+1.28=484.86
+合わせて600円くらい？
+
+
+# --------------------------------------------
+1,"1","CONFIG",CN2 
+1,"CN3","MOTOR",CN3 
+
+70	TB-39			CN4 
+70	SN 3-3			CN5 
+
+70	PIC16F1825		U1 
+140	AO3435			Q1, Q2
+70	ATS040B	"4MHz		X1 
+70	PMEG2010AEH		D1 
+70	WP710A10LSRD		D2 
+70	1nF			C1 
+140	10uF			C2, C3
+140	22pF			C4, C5
+70	6.3ZLH3900MEFC12.5X20	C6 
+70	EVQPAG07K		S1 
+70	2.2k			R1 
+
+			TB-39					70	191
+			SN 3-3					70	102
+
+WM5354			CONN HSG 2POS .100 SINGLE VER D		140	 20.472	2866
+WM2517CT		CONN TERM MALE 22-24AWG TIN		140	  7.448	1043
+WM2510CT		CONN TERM FEMALE 22-24AWG TIN		140	  6.796	951
+P10865S			SWITCH DETECTOR 5MM W/MTG HOLE		140	 35.670	4994
+
+PIC16F1825-I/SL		MCU PIC 14K FLASH 1K RAM 14SOIC		70	120.960	8467
+785-1544-1		MOSFET P CH 20V 2.9A SOT23		140	 23.270	3258
+CTX896			CRYSTAL 4.0MHZ 18PF THRU		70	 26.980	1889
+568-4112-1		DIODE SCHOTTKY 20V 1A SOD123F		70	 29.160	2041
+754-1590		LED RED DIFF 3MM 640NM 2MA		70	  9.640	675
+399-1147-1		CAP CER 1000PF 50V 10% X7R 0805		70	  2.080	146
+399-8014-1		CAP CER 10UF 6.3V 20% X5R 0805		140	  5.288	740
+399-1113-1		CAP CER 22PF 50V 5% NP0 0805		140	  2.270	318
+1189-1763		CAP ALUM 3900UF 6.3V 20% RADIAL		70	 55.360	3875
+P12196S			SWITCH TACTILE SPST-NO 0.02A 15V	70	 19.280	1350
+YC164J-2.2KCT		RES ARRAY 2.2K OHM 4 RES 1206		70	  2.640	185
+2866+1043+951 +1350 +185 +675 +8467 +3258 +1889 +2041 +3875 +318 +146 +740 +4994=32798
+32798/70=468.54285
+468.54285+191+102= 761.54285
+
+WM5354			CONN HSG 2POS .100 SINGLE VER D		110	 20.472	2252
+WM2517CT		CONN TERM MALE 22-24AWG TIN		110	  7.448	819
+WM2510CT		CONN TERM FEMALE 22-24AWG TIN		110	  6.796	748
+WM9137CT		CONN TERM MALE 24-30AWG GOLD		50	 21.760	1088
+WM9139CT		CONN TERM FEMALE 24-30AWG 30GOLD	50	 15.820	791
+WM2803			CONN HOUSING 5POS .100 SINGLE		20	 44.700	894
+501-1332		MINIGRABBER 2PC OF 3925 1BLK/RED	5	449.000	2245
+501-1351		BANANA PLUG DIY SET 1BLACK/1RED		10	362.000	3620
+
+§ギー式
+
+イマイチ面白くないのでやらない。
+
+
+§ポルタ微動ユニット(歯数120)
+
+白い箱はすべてポルタ微動用にまわす。
+RC0, RC1 により x0, x1, x2 を切り替える。RA0, RA1 は見ない。
+基本的に電池2本仕様。
+
+70110 4速クランクギヤーの4速目(1:5402.25)。
+DS0.8-15	141	3.2kg-cm		3mmボア, 9mm長さ
+DS0.8-64	293	20kg-cm			6mmボア, 歯先円直径52.8mm
+1/1436.0681755 * 120 * 64/15* 36*42/12*42/12*42/12*42/12 = 1926.0587816064
+
+
+§横山式(2軸・低背)
+プロトタイプはともかく、基板を新たにつくるべき。
+
+EWやSNはそれぞれ抵抗1本で合成
+CCP3端子で南北判定する。
+南側モーター用MCUのCCP3からRC0とRC1それぞれにプルアップ用抵抗(2.2kΩ)を接続する。
+1) RC0=RC1=0、CCP3端子はweak pull-upでつり上げる。300uA最大の電流が2個のプルアップ抵抗に流れる。
+2) まつ。
+3) CCP3端子の電圧を測定する。330mV以下なら南側モーター。
+4) まつ。
+5) RC0 と RC1 は Hi-Zにする。以降は通常処理。
+
+ディジタル入力
+RA0	RA1	
+L	H	停止。			すべてに優先。		動作限界SW。
+H	L	速度への影響無し。	lut idxを先頭に戻す。	原点検出SW。
+H	H	速度への影響無し。
+L	L	速度への影響無し。
+
+アナログ入力
+RC0	RC1		北設定		南設定
+EW端子	NS端子		N motor		S motor
+VDD	VDD	+	x1		x1
+VDD/2	VDD	W	x2		x2
+0	VDD	E	x0		x0
+VDD	VDD/2	S	x0		x2
+VDD/2	VDD/2	SW	x1		x2
+0	VDD/2	SE	x0		x1
+VDD	0	N	x2		x0
+VDD/2	0	NW	x2		x1
+0	0	NE	x1		x0
+
+
+72005 6速ギヤボックスHEの第4速。1500rpm前後で動かしたい。
+DS1-12		155	4.5kg-cm		ボア4mm, 歯幅6mm, 長さ12mm, 歯先円直径14mm
+DS1-70		410	46kg-cm			ボア8mm, 歯幅6mm, 長さ14mm, 歯先円直径72mm
+半径500mmでは、
+70/12 * 36/8*36/14*36/14*36/14*36/14 * 2*pi*500/1.75/1436.0681755 = 1434.7093682301
+半径600mmでは、
+70/12 * 36/8*36/14*36/14*36/14*36/14 * 2*pi*600/1.75/1436.0681755 = 1721.6512418761
+半径700mmでは、
+70/12 * 36/8*36/14*36/14*36/14*36/14 * 2*pi*700/1.75/1436.0681755 = 2008.5931155221
+
+
+
+§菊田式(1軸・高背)
+
+ディジタル入力
+RA0	RA1	
+H	H	速度への影響無し。
+L	H	停止。			すべてに優先。		動作限界SW。
+H	L	速度への影響無し。	lut idxを先頭に戻す。	原点検出SW。
+L	L	速度への影響無し。
+
+M12ボルト＋ウルトラナッター
+M12はピッチ1.75mmなので、2*pi*r/1.75/1436.0681755 でボルトの回転数が出る。
+引き下げる方向にタンジェントスクリューを使うと、推進力Q[kgf]=6.0*トルクT[kgf-cm]になる。
+極軸40kg, タンジェントスクリュー10kg*2で支えるとすると、ギヤボックスのT=10/6.0*12/70=0.29。
+もう少し軽く持ち上げるようにしないといけないかも。
+
+イレクターパイプ 標準パイプ	内径24.1mm 外径 27.7mm
+プラスチックジョイント　	J-103 でウルトラナッターに接続
+ナイロンフランジナット		フランジ径 24mm 長さ24.5mm
+ナイロンナット			長さ 23.5mm
+J-103とウルトラナット　パイプ端からナット端まで 23mm
+
+ユニクロ　フニロンナット M12 (19x24)がイレクターパイプにジャストフィット。
+フランジ外径が23.7mm前後。 パイプ内部の溶接ビードをヤスリで削り落とすだけでよい。
+
+試作1
+カラーとフランジベアリングと歯車と座金とスペーサー 5+10+14+1+40=70mm
+フランジベアリング中心からの距離60mm
+
+250mmボルト+3mm	ナット間73mm	移動距離110mm	243	298	353	76分前後
+250mmボルト+3mm	ナット間79mm	移動距離104mm	243	295	347	72分前後	パイプ160mm
+250mmボルト+3mm	ナット間93mm	移動距離90mm	243	288	333	62分前後
+長さはB-BAF810の中心から他端への距離。なので、ボルトの端からの距離を考えるときは+10mmすること。
+
+スペーサーは5mmくらいならナット内部に入り込んでも差し支えない。
+ボルトは250mm、最長で70分間かな。
+
+試作2
+フランジベアリングと歯車と座金とスペーサー 10+14+1+40=65mm
+フランジベアリング中心からの距離60mm
+
+260mmボルト	ナット間75mm	移動距離120mm	255	315	375	83分前後	バイプ172mm
+260mmボルト	ナット間85mm	移動距離110mm	255	310	365	76分前後	バイプ177mm
+260mmボルト	ナット間91mm	移動距離104mm	255	307	359	72分前後	パイプ180mm
+長さはB-BAF810の中心から他端への距離。なので、ボルトの端からの距離を考えるときは+5mmすること。
+
+コーススレッドは長さ25mmからなので、板厚は24mm必要。
+
+直角が出てないと困るけど、300x425の三角形を300x450から取って、2枚の三角板を使うとすると、
+(9.6/2-3)/(425/sqrt(425^2+300^2))*2+450*300/425=322.0535969043
+(蝶番軸/2-挽き代)/cos(三角板の鋭角)*2+三角板の底辺を450mmに延長したときの高さ=
+となって、上下の板の間が322mmになる。
+このときの三角板の鋭角=35.2175929611
+
+L金具
+F-919	幅30mm 一辺150mm
+
+円周角(circumferential angle)
+x1 < 0, 0 < x2, yv < 0
+支点1(x1, 0)
+支点2(x2, 0)
+頂点(0, yv)
+円の方程式 (x - xc)^2 + (y - yc)^2=r^2
+円の中心 (xc, yc)=((x1+x2)/2, yc)
+
+(x1 - (x1+x2)/2)^2 + yc^2=(2*x1 - x1 - x2)^2/4 + yc^2=(x1-x2)^2/4 + yc^2=r^2
+(x1+x2)^2/4 + (yv - yc)^2=r^2
+
+(x1-x2)^2/4 + yc^2=(x1+x2)^2/4 + (yv - yc)^2
+
+-x1*x2/2 + yc^2=x1*x2/2 + yv^2 - 2yv*yc + yc^2
+
+-x1*x2=yv^2 - 2yv*yc
+
+2yv*yc=yv^2 + x1*x2
+
+yc = yv/2 + x1*x2/2/yv
+
+
+J-103 + 針金 が一番楽そうできれいかな？
+
+ドブソニアン台		6.8Kg
+ドブソニアン20cm	9.8Kg
+追尾架台		7.0Kg
+
+消費電流(17kg搭載)
+2.7V	70〜90mA
+3.0V	50〜70mA
+3.3V	60mA
+3.6V	50〜65mA
+4.5V	35〜45mA
+
+Hinged EQ-Pedestal
+Hinged Equatorial Pedestal
+
+tangent.s		3/2/3/10	沼田さん
+6-speed-4th-60min.s	3/2/3/10	量産1〜4? 12?
+DS成形ギア側から止めネジまで25mm+ワッシャ=25.8mm
+
+			HB改造	HB未改造
+アイボリー	11個	2個(2個譲渡)
+黒			65個	5個(3個故障、2個販売)
+2個未改造があるはずFETを74個しか使ってない26個余る。
+
+ファスリンク 3.9mm - 90mm ピッチ2.88mm(2.87mm〜2.88mm)くらい。	
+
+
+AO6604
+1		62.00000	62
+25		46.08000	1,152
+100		39.46000	3,946
+250		34.21600	8,554
+500		28.98600	14,493
+1,000	22.34500	22,345
+
+AO3435
+1		67.00000	67
+25		37.80000	945
+100		28.62000	2,862
+250		20.23600	5,059
+500		16.20000	8,100
+1,000	12.42300	12,423
+
+AO3415A
+1		63.00000	63
+25		36.56000	914
+100		29.21000	2,921
+250		21.28800	5,322
+500		17.29000	8,645
+1,000	13.29000	13,290
+
+AN74LVC1GU04
+1		53.00000	53
+10		35.60000	356
+100		16.67000	1,667
+1,000	14.51600	14,516
+
+MJ-1635
+Element["onsolder" "CN1" "CN1" "MJ-1635" 530.00mil 440.00mil -245.00mil 310.00mil 0 100 "auto"]
+(
+	Pin[-3.50mm 4.25mm  90.00mil 20.00mil  96.00mil 1.8mm "1" "1" ""]
+	Pin[ 3.50mm 4.25mm  90.00mil 20.00mil  96.00mil 1.8mm "1" "1" ""]
+	Pin[ 0.00mm 3.75mm 120.00mil 20.00mil 126.00mil 2.5mm "1" "1" ""]
+	Pin[ 0.00mm 8.75mm  90.00mil 20.00mil  96.00mil 1.8mm "2" "2" ""]
+	Pin[ 0.00mm 13.5mm 120.00mil 20.00mil 126.00mil 2.5mm "3" "3" ""]
+	ElementLine [-4.0mm  0.00mm  4.0mm  0.00mm 8.00mil]
+	ElementLine [-4.0mm 16.50mm  4.0mm 16.50mm 8.00mil]
+	ElementLine [ 4.0mm  0.00mm  4.0mm 16.50mm 8.00mil]
+	ElementLine [-4.0mm  0.00mm -4.0mm 16.50mm 8.00mil]
+
+	)
+
+SOT-23
+Element["" "Q2" "Q2" "AO3435" 720.00mil 740.00mil -100.00mil -130.00mil 0 100 ""]
+(
+	Pad[-40.00mil 40.00mil -40.00mil 40.00mil 40.00mil 18.00mil 46.00mil "1" "1" "square"]
+	Pad[0.0000 -40.00mil 0.0000 -40.00mil 40.00mil 18.00mil 46.00mil "3" "3" "square"]
+	Pad[40.00mil 40.00mil 40.00mil 40.00mil 40.00mil 18.00mil 46.00mil "2" "2" "square,edge2"]
+	ElementLine [-71.00mil 71.00mil 71.00mil 71.00mil 8.00mil]
+	ElementLine [71.00mil -71.00mil 71.00mil 71.00mil 8.00mil]
+	ElementLine [-71.00mil -71.00mil -71.00mil 71.00mil 8.00mil]
+	ElementLine [-71.00mil -71.00mil 71.00mil -71.00mil 8.00mil]
+
+	)
+
+SOT-25
+Element["" "U2" "U2" "74LVC1G04W5" 800.00mil 905.00mil -140.00mil 90.00mil 0 100 ""]
+(
+	Pad[-40.00mil 45.00mil -40.00mil 60.00mil 30.00mil 18.00mil 36.00mil "1" "1" "square,edge2"]
+	Pad[0.0000 45.00mil 0.0000 60.00mil 30.00mil 18.00mil 36.00mil "2" "2" "square,edge2"]
+	Pad[40.00mil 45.00mil 40.00mil 60.00mil 30.00mil 18.00mil 36.00mil "3" "3" "square,edge2"]
+	Pad[40.00mil -60.00mil 40.00mil -45.00mil 30.00mil 18.00mil 36.00mil "4" "4" "square"]
+	Pad[-40.00mil -60.00mil -40.00mil -45.00mil 30.00mil 18.00mil 36.00mil "5" "5" "square"]
+	ElementLine [-66.00mil 86.00mil 66.00mil 86.00mil 8.00mil]
+	ElementLine [66.00mil -86.00mil 66.00mil 86.00mil 8.00mil]
+	ElementLine [-66.00mil -86.00mil -66.00mil 86.00mil 8.00mil]
+	ElementLine [-66.00mil -86.00mil 66.00mil -86.00mil 8.00mil]
+	ElementArc [-66.00mil 0.0000 19.00mil 19.00mil 90 180 8.00mil]
+
+	)
+
+SOT-26
+Element["" "Q1" "Q1" "AO6604" 900.00mil 735.00mil 60.00mil -85.00mil 2 100 ""]
+(
+	Pad[-60.00mil -40.00mil -45.00mil -40.00mil 30.00mil 18.00mil 36.00mil "1" "1" "square"]
+	Pad[-60.00mil 0.0000 -45.00mil 0.0000 30.00mil 18.00mil 36.00mil "2" "2" "square"]
+	Pad[-60.00mil 40.00mil -45.00mil 40.00mil 30.00mil 18.00mil 36.00mil "3" "3" "square"]
+	Pad[45.00mil 40.00mil 60.00mil 40.00mil 30.00mil 18.00mil 36.00mil "4" "4" "square,edge2"]
+	Pad[45.00mil 0.0000 60.00mil 0.0000 30.00mil 18.00mil 36.00mil "5" "5" "square,edge2"]
+	Pad[45.00mil -40.00mil 60.00mil -40.00mil 30.00mil 18.00mil 36.00mil "6" "6" "square,edge2"]
+	ElementLine [-86.00mil -66.00mil -86.00mil 66.00mil 8.00mil]
+	ElementLine [-86.00mil 66.00mil 86.00mil 66.00mil 8.00mil]
+	ElementLine [-86.00mil -66.00mil 86.00mil -66.00mil 8.00mil]
+	ElementLine [86.00mil -66.00mil 86.00mil 66.00mil 8.00mil]
+	ElementArc [0.0000 -66.00mil 19.00mil 19.00mil 0 180 8.00mil]
+
+	)
+
+SOT-363, SC70-6, SC88
+Element["" "U2" "U2" "74LVC2G04DW" 800.00mil 905.00mil -140.00mil 90.00mil 0 100 ""]
+(
+	Pad[-26.00mil 34.00mil -26.00mil 41.00mil 18.00mil 18.00mil 24.00mil "1" "1" "square,edge2"]
+	Pad[0.0000 34.00mil 0.0000 41.00mil 18.00mil 18.00mil 24.00mil "2" "2" "square,edge2"]
+	Pad[26.00mil 34.00mil 26.00mil 41.00mil 18.00mil 18.00mil 24.00mil "3" "3" "square,edge2"]
+	Pad[26.00mil -41.00mil 26.00mil -34.00mil 18.00mil 18.00mil 24.00mil "4" "4" "square"]
+	Pad[0.00mil -41.00mil 0.00mil -34.00mil 18.00mil 18.00mil 24.00mil "5" "5" "square"]
+	Pad[-26.00mil -41.00mil -26.00mil -34.00mil 18.00mil 18.00mil 24.00mil "6" "6" "square"]
+	ElementLine [-46.00mil 61.00mil 46.00mil 61.00mil 8.00mil]
+	ElementLine [46.00mil -61.00mil 46.00mil 61.00mil 8.00mil]
+	ElementLine [-46.00mil -61.00mil -46.00mil 61.00mil 8.00mil]
+	ElementLine [-46.00mil -61.00mil 46.00mil -61.00mil 8.00mil]
+	ElementArc [-46.00mil 0.0000 15.00mil 15.00mil 90 180 8.00mil]
+
+	)
+
+CSTCR_G15L	産業用狭精度
+	Pad[47.00mil 60.0mil -47.00mil 60.0mil 16.00mil 20.00mil 22.00mil "3" "3" "square"]
+	Pad[47.00mil 0.00mil -47.00mil 0.00mil 16.00mil 20.00mil 22.00mil "2" "2" "square"]
+	Pad[47.00mil -60.0mil -47.00mil -60.0mil 16.00mil 20.00mil 22.00mil "1" "1" "square"]
+
+CSTCR_G		民生用標準精度
+	Pad[43.00mil 64.0mil 43.00mil 56.0mil 24.00mil 20.00mil 30.00mil "3" "3" "square"]
+	Pad[-43.00mil 64.0mil -43.00mil 56.0mil 24.00mil 20.00mil 30.00mil "3" "3" "square"]
+	Pad[47.00mil 60.0mil -47.00mil 60.0mil 16.00mil 20.00mil 22.00mil "3" "3" "square"]
+	Pad[43.00mil 4.0mil 43.00mil -4.0mil 24.00mil 20.00mil 30.00mil "2" "2" "square"]
+	Pad[-43.00mil 4.0mil -43.00mil -4.0mil 24.00mil 20.00mil 30.00mil "2" "2" "square"]
+	Pad[47.00mil 0.00mil -47.00mil 0.00mil 16.00mil 20.00mil 22.00mil "2" "2" "square"]
+	Pad[43.00mil -64.0mil 43.00mil -56.0mil 24.00mil 20.00mil 30.00mil "1" "1" "square"]
+	Pad[-43.00mil -64.0mil -43.00mil -56.0mil 24.00mil 20.00mil 30.00mil "1" "1" "square"]
+	Pad[47.00mil -60.0mil -47.00mil -60.0mil 16.00mil 20.00mil 22.00mil "1" "1" "square"]
+
+
+		WP710A	old		OSDR
+1800	138.9	119.8	58.2
+1900	207.9	182.9	112.8
+2000	282.6	252.3	176.5
+2200	434		396		312
+2500	686		636		545
+3000	1115	1050	953
+3600	1651	1571	1475
+4500	2470	2369	2283
+5400	3290	3170	3100
+6300	4120	3980	3930
+
+モーター巻線の自己誘導による電圧
+	電流0では0V
+	ブラシが離れたら検出できない
+
+モーター巻線のBack-EMFによる電圧
+	検出には電流が0である必要がある
+	速度0では0V
+	ブラシが離れたら検出できない
+		ADC前にLC LPFを0Vにリセットすることで、ブラシ通過中は電圧を低く検出する。
+
+EEPROMの扱い
+2バイト/1エントリ
+書き込みのムラを減らすために1バイトずつずらしてつかう。
+	bit7      シーケンスビット
+	bit6-bit0 データ
+
+シーケンスビットとデータの関係
+下位       上位
+	0 0 0 0
+	H     L
+
+	1 0 0 0
+	L H    
+
+	1 1 0 0
+	  L H  
+
+	1 1 1 0
+	    L H
+
+	1 1 1 1
+	H     L
+
+	0 1 1 1
+	L H    
+
+	0 0 1 1
+	  L H  
+
+ウルトラナッター
+・タップで少し削る。緩み止めが効かないようにする。
+・内部のナットを順に並べ替える。
+ボルト
+・ダイスで少し削る。0.1mmから0.2mmくらい。表面がきれいになったらいい。
+・モーターの回転方向はブラシの向きにより決まる。FA-130だけ両方向回転。
+
+☆  低速 片方向 HB+LS駆動 motorMCU
+PIC16F18345		20SSOP 134円	8KW  強化I/Oドライバ 40001795E.pdf
+PIC16F1619		20SSOP 149円	8KW  従来型I/Oドライバ＋高駆動I/Oドライバ
+PIC16F18346		20SSOP 147円	16KW 強化I/Oドライバ
+				PIC16F1825より1割くらい安い
+				PIC16F1847より3割くらい安い
+
+LPBORはSleep時のRAM保持を担保する。
+BORは通常動作を担保する。
+プルアップ抵抗を大きくしないと消費電流に大きく影響する。100kΩくらいで十分。
+MCUは1.1mAくらいなので、プルアップ0.1mA, LED 0.3mAくらいならいいなと思う。
+
+2.3-5.5V
+Low-power sleep		0.3uA (LDO OFF)		0.2uA (LPBOR ON)	0.5uA, 4.4mAh/year
+Normal mode sleep	12.8uA (LDO ON)		10.5uA (BOR ON)		23.3uA, 200mAh/year
+
+IC ICSP HC	USB				PU/PD
+1	2		VDD							VDD			-> 100nF -> GND
+2			RA5							OSC1		X'tal -> 22pF -> GND
+3			RA4							OSC2		X'tal -> 22pF -> GND
+4	1		RA3/Vpp/MCLR	外付け2k	RA3			Power SW
+5			RC5				外付け1k	ANC5		LED A Sense
+6			RC4							PWM6		LED K Drive
+7			RC3							CLC4		-> clamp FET control
+8			RC6				外付け100k	CWG1A		-> 47 ohm -> HB1 HS pMOS G
+9			RC7							CWG1A		-> 47 ohm -> HB1 HS pMOS G
+10			RB7							CWG1A		-> 47 ohm -> HB1 HS pMOS G
+
+11			RB6							CWG1B		-> 47 ohm -> HB1 LS nMOS G
+12			RB5				外付け100k	CWG1B		-> 47 ohm -> HB1 LS nMOS G
+13			RB4				外付け100k	CM1OUT		-> 47 ohm -> HB2 LS nMOS G
+14			RC2				内蔵		ANC2/RC2	HB1 -> 抵抗1k -> ANC2/RC2 -> 1nF -> HB2
+15		2	RC1				内蔵		RC1			Double SW
+16		3	RC0				内蔵		RC0			Stop SW
+17			RA2							ANA2/RA2	テスト用空きピン
+18	5		RA1/ICSPCLK		内蔵		RA1			ICSPCLK/Origin SW
+19	4		RA0/ICSPDAT		内蔵		RA0			ICSPDAT/Limit SW
+20	3	1	VSS							VSS		
+
+回生後のTurn ONでダイオードのTrrの影響を受ける。SBD入れた方がよさそう。
+同時に、dV/dtの影響で相手側のFETがSelf Turn ONする。
+n-MOSは低抵抗ドライブ、p-MOSはLow 1個/High 2個で駆動する。← TurnOFF側の駆動能力を確保。
+Slew rate limitのおかげで47Ωくらいのゲート抵抗を入れれば良さそう。
+水晶は4MHzとする。16MHz発振より、4MHz+PLLのほうが電力消費が少ないみたい。
+	HB1	tr	tf	HB2	tr
+3.0V	28	28		50
+5.0V	17	24		50
+
+HB1 HS	1-port pp drive + 2-port od drive		L: 1.5	H: 3
+HB1 LS	1-port pp drive + 2-port od clamp		L: 1.5	H: 1
+HB2 LS	1-port pp drive
+
+16MHz水晶 EXTHS, 3.3V G-S間抵抗22kΩなのでHB1/HB2合計で0.3mAはその抵抗が消費する。
+無負荷2x1.945mA		無負荷1x 1.784mA		停止SW	1.307mA
+
+A/D変換対象
+FVR
+Back-EMF
+LED Current
+
+
+発振器制御
+SW読み込み
+時刻更新
+電源断(電源SW) -> reset
+電源断(停止限界到達) -> reset
+
+原点復帰(原点復帰SW)
+停止(動作限界〜停止限界) -> return
+停止(動作限界SW) -> return
+停止(停止SW) -> return
+高速(電源SW) -> return
+2倍速(2倍速SW) -> return
+1倍速 -> return
+
+
+TMR0	空き								※ CCPからリセットできない。
+TMR2	PWM5	PWM		CWG1	HB-PWM		HB1 Drive <- Auto Shutdown <- HB2 LS Gate <- C1OUT
+TMR4										(PR4 match) -> Key Scan
+TMR6	PWM6	PWM							LED Drive
+TMR6										(PR6 match) -> ADC Trigger for LED
+
+TMR1	CCP1	Compare						(CCP1 match) -> ADC Trigger for Back-EMF 
+TMR3	CCP3	Compare						(CCP3 match) -> ADC Trigger for FVR voltage
+											Periodic Processing
+TMR5	空き
+CCP2	空き
+CCP4	空き
+
+C1OUT										HB2 LS Gate
+
+☆  低速 片方向 HB+LS駆動 乗算命令あり
+PIC18F24Q10
+PIC18F24Q10-I/ML	28-QFN		6mmx6mm 0.65mm		133円
+PIC18F24Q10-I/SS	28-SSOP		5.3mm Body 0.65mm	133円
+PIC18F24Q10-I/SP	28-SPDIP	300mil Body 2.54mm	168円
+
+RE3 1 26 — — — — — — — IOCE3 — — — Y Vpp/MCLR
+RA0 2 27 ANA0 — C1IN0-/C2IN0- — — — — IOCA0 — — — Y —
+RA1 3 28 ANA1 — C1IN1-/C2IN1- — — — — IOCA1 — — — Y —
+RA2 4 1 ANA2 DAC1OUT1/Vref- (DAC)/Vref- (ADC) C1IN0+/C2IN0+ — — — — IOCA2 — — — Y —
+RA3 5 2 ANA3 Vref+ (DAC)/Vref+ (ADC)C1IN1+ — — — — IOCA3 — MDCARL(1) — Y —
+RA4 6 3 ANA4 — — T0CKI(1) — — — IOCA4 — MDCARH(1) — Y —
+RA5 7 4 ANA5 — — — — — — IOCA5 — MDSRC(1) SS1(1) Y —
+VSS 8 5 — — — — — — — — — — — — VSS
+RA7 9 6 ANA7 — — — — — — IOCA7 — — — Y OSC1/CLKIN
+RA6 10 7 ANA6 — — — — — — IOCA6 — — — Y CLKOUT/OSC2
+RC0 11 8 ANC0 — — T1CKI(1)/T3CKI(1)/T3G(1) — — — IOCC0 — — — Y SOSCO
+RC1 12 9 ANC1 — — — CCP2(1) — — IOCC1 — — — Y SOSCIN/SOSCI
+RC2 13 10 ANC2 — — T5CKI(1) CCP1(1) — — IOCC2 — — — Y —
+RC3 14 11 ANC3 — — T2IN(1) — — — IOCC3 — — SCK1(1)/SCL1(3,4) Y —
+RC4 15 12 ANC4 — — — — — — IOCC4 — — SDI1(1)/SDA1(3,4) Y —
+RC5 16 13 ANC5 — — T4IN(1) — — — IOCC5 — — — Y —
+RC6 17 14 ANC6 — — — — — — IOCC6 CK1(1,3) — — Y —
+RC7 18 15 ANC7 — — — — — — IOCC7 RX1/DT1(1,3) — — Y —
+VSS 19 16 — — — — — — — — — — — — VSS
+VDD 20 17 — — — — — — — — — — — — VDD
+RB0 21 18 ANB0 — C2IN1+ — — CWG1(1) ZCDIN IOCB0/INT0(1) — — — Y —
+RB1 22 19 ANB1 — C1IN3-/C2IN3-— — — — IOCB1/INT1(1) — — — Y —
+RB2 23 20 ANB2 — — — — — — IOCB2/INT2(1) — — — Y —
+RB3 24 21 ANB3 — C1IN2-/C2IN2- — — — — IOCB3 — — — Y —
+RB4 25 22 ANB4 — — T5G(1) — — — IOCB4 — — — Y —
+RB5 26 23 ANB5 — — T1G(1) — — — IOCB5 — — — Y —
+RB6 27 24 ANB6 — — — — — — IOCB6 — — — Y ICSPCLK
+RB7 28 25 ANB7 DAC1OUT2 — T6IN(1) — — — IOCB7 — — — Y ICSPDAT
+OUT(2) — — ADGRDA/ADGRDB — C1OUT/C2OUT TMR0 CCP1/CCP2/PWM3/PWM4 CWG1A/CWG1B/CWG1C/CWG1D — — TX1/CK1(3)/DT1(3) DSM SDO1/SCK1 — —
+
+														PPS		PPS
+RE3	1	26							Vpp/MCLR	IOCE3					Vpp/MCLR/power SW(was RA3)
+RA0	2	27	ANA0	C1IN0-/C2IN0-				IOCA0			ANA0	LED current sense
+RA1	3	28	ANA1	C1IN1-/C2IN1-				IOCA1	PWM4		A/C	LED drive
+RA2	4	1	ANA2	C1IN0+/C2IN0+	DAC1OUT1	IOCA2			RA2		debug pin
+RA3	5	2	ANA3	C1IN1+						IOCA3	DSM		SS	A/C	DSM-SS
+RA4	6	3	ANA4								IOCA4			RA4		stop SW(was RC0)
+RA5	7	4	ANA5								IOCA5			RA5		double speed SW(was RC1)
+VSS	8	5	VSS						VSS									Power
+RA7	9	6	OSC1					CLKIN								X'tal
+RA6	10	7	OSC2					CLKOUT								X'tal
+RC0	11	8	ANC0								IOCC0	C1OUT		A/C	HB2 LS
+RC1	12	9	ANC1								IOCC1	C1OUT		A/C	HB2 LS
+RC2	13	10	ANC2								IOCC2	SDO1		A/C	HB1 HS OD
+RC3	14	11	ANC3								IOCC3	SDO1		A/C	HB1 HS OD
+
+RC4	15	12	ANC4								IOCC4	SDO1		A/C	HB1 HS OD
+RC5	16	13	ANC5								IOCC5	CWG1A		B/C	HB1 HS
+RC6	17	14	ANC6								IOCC6	CWG1A		B/C	HB1 HS
+RC7	18	15	ANC7								IOCC7	CWG1A		B/C	HB1 HS
+VSS	19	16	VSS						VSS									Power
+VDD	20	17	VDD						VDD									Power
+RB0	21	18	ANB0	C2IN1+			ZCDIN		IOCB0			ZCDIN	HB1 voltage sense ADC
+RB1	22	19	ANB1								IOCB1	CWG1B		B/C	HB1 LS
+RB2	23	20	ANB2								IOCB2	CWG1B		B/C	HB1 LS
+RB3	24	21	ANB3	C1IN2-/C2IN2-				IOCB3	CWG1A		B/C	HB1 LS OD
+RB4	25	22	ANB4								IOCB4	CWG1A		B/C	HB1 LS OD
+RB5	26	23	ANB5								IOCB5	CWG1A		B/C	HB1 LS OD
+RB6	27	24	ANB6	ICSPCLK						IOCB6			RB6		ICSPCLK/origin SW(was RA1)
+RB7	28	25	ANB7	ICSPDAT						IOCB7			RB7		ICSPDAT/limit SW(was RA0)
+
+MDMSRC	A/C		HS in
+SS1		A/C		HS ctrl from DSM
+DSM		A/C		HS ctrl to SS1
+SDO1	B/C		HS drive
+C1OUT	A/C		LS drive
+CWG1	B/C		HS/LS drive
+
+6.3WV 直径8mm 長さ10mm 1500μF 80mΩ 70円@10個
+EMZR6R3ARA152MHA0G	US Chemi-Con	Alchip MZR
+UCM0J152MNL1GS	Nichicon	UCM
+
+6.3WV 直径10mm 長さ10mm 2200μF 60mΩ 90円～120円@10個
+EMZR6R3ARA222MJA0G	US Chemi-Con	Alchip MZR
+UCM0J222MNL1GS	Nichicon	UCM
+EEE-FT0J222AP	Panasonic	FT
+
+reset
+NCP300LSN18T1G	1800mV±36mV@25℃
+MCP112T-195I/TT	1900mV±29mV@25℃	1900mV±48mV
+
+HB1 open drain cotrol HS -> DSM -> SPI SS(A/C) -> SPI MISO(B/C)
+HB1 HS	2-port pp drive + 2-port od drive		L: 3	H: 4
+HB1 LS	2-port pp drive + 2-port od clamp		L: 3	H: 2	D-S間にSBDが必要 Qrr によるdV/dt削減。
+HB2 LS	2-port pp drive
+HB1 voltage sense ADC	
+LED drive PWM		PWM4
+LED current sense ADC
+CWG			  B C	<- PWM3
+PWM			A   C
+SPI MISO	  B C
+DSM			A   C
+SPI SS		A   C
+CMP         A   C
+
+VDD --- 1kΩ --- LED Anode --- LED current sense ADC
+LED Cathode --- LED drive PWM
+VDD --- 10kΩ --- Vpp/MCLR
+VDD --- 10kΩ --- Power SW
+VDD --- 100kΩ --- HB1 HS FET G -+- 22Ω pp drive
+                                +- 22Ω od drive
+GND --- 100kΩ --- HB1 LS FET G --- 22Ω pp drive
+HB1 --- 1kΩ -+- HB1 voltage sense ADC 
+HB2 --- 1nF -+
+GND --- 100kΩ --- HB2 LS FET G --- 22Ω pp drive
+
+☆  低速 片方向 HB+LS駆動 USB付き motorMCU
+PIC16F1459		20SSOP 200円	8KW  従来型I/Oドライバ
+
+LPBORはSleep時のRAM保持を担保する。
+BORは通常動作を担保する。
+LVPを使う。
+
+2.3-5.5V
+Low-power sleep		0.3uA (LDO OFF)		0.45uA (LPBOR ON)	0.73uA, 6.4mAh/year
+Normal mode sleep	12uA (LDO ON)		8uA (BOR ON)		20uA, 175mAh/year
+
+IC ICSP USB					PU/PD
+1	2	1	VDD							VDD		
+2			RA5							OSC1	X'tal
+3			RA4/AN3						OSC2	X'tal
+4	1		RA3/Vpp/MCLR	外付け1k	MCLR	Power SW
+5			RC5				外付け100k	CWG1A	HB1 HS pMOS G -> NC7NZ04
+6			RC4				外付け100k	CWG1B	HB1 LS nMOS G -> NC7NZ04
+7			RC3/AN7			外付け100k	RC3/AN7	HB2 LS nMOS G -> NC7NZ04
+8			RC6/AN8						PWM2	LED K Drive
+9			RC7/AN9			外付け1k	AN9		LED A Sense
+10		4	RB7				内蔵		RB7		ID pin
+11			RB6				外付け100k	RB6		
+12			RB5/AN11		内蔵		AN11	
+13			RB4/AN10		内蔵		AN10	HB1 LPF <- 抵抗1k <- HB1
+14			RC2/AN6						RC2		Rush Current Limit
+15	5		RC1/AN5			外付け10k	AN5		Limit SW
+16	4		RC0/AN4			外付け10k	AN4		Origin SW	
+17			VUSB3V3					
+18		2	RA1/D-/ICSPCLK	外付け10k	RA1/D-	USB DM / Double SW
+19		3	RA0/D+/ICSPDAT	外付け10k	RA0/D+	USB DP / Stop SW
+20	3	5	VSS							VSS		
+
+Rush Current Limit の駆動と、MCUの電源をどうするか？
+MCUには入力そのままつなぐ、モーターには突入電流制限後の電源を使う。
+
+TMR2	PWM1	PWM		CWG1 -> Motor Driver
+TMR2	PWM2	PWM		LED Drive
+
+PortaII 三脚
+設置半径370mm〜606mm
+足の間  640mm〜1050mm
+
+SXG-AL130三脚
+設置半径427mm〜693mm
+足の間  740mm〜1200mm
+
+正三角形ABC, 1辺は1.0の大きさ
+X軸は西を正、Y軸は南を正、Z軸は上を正、
+南の頂点Aを(0,0.5,0)に固定。
+北の頂点Bはz=0上を動く、(sin u, -cos u + 0.5, 0)
+西の頂点Cは(sqrt(3)/2*cos t, 0, sqrt(3)/2*sin t)をX軸でφ(緯度)回したもの
+(sqrt(3)/2*cos t, sqrt(3)/2*sin t *sin φ, sqrt(3)/2*sin t *cos φ)
+
+
+抵抗分圧
+3:1:2:6		0, 1/4, 1/2, 3/4, 1
+2:1:3		0, 1/3, 2/3, 1
+1:1			0, 1/2, 1
+
+月の動き(赤経/日)
+45分	最遠で天の赤道に近い
+63分	最近で天の赤道から遠い
+
+地球自転周期	86164.091秒=1436.068183分
+太陽公転周期	365.2422日
+月公転周期		27.32166155日
+月時駆動	1490分±9分
+a=朔望月[日]=29.5+(44+2.88/60)/60/24
+朔望月[日]/(地球回転数-月回転数)*1440分/日=a/(a-1)*1440
+1490.47214432229268156800分/回転
+
+SSL-LX5093SRD/G	1.60V@0.5mA
+WP710A10LSRD	1.62V@0.5mA
+OSDR			1.74V@0.5mA
+
+ウルトラナッター	M16ナット相当 平径24mm
+VE22の両サドルで保持できそう。
+サドルベース
+
+極楽峠パノラマパーク	下條村
+馬の背			やぶさか
+高峰高原	平谷村
+
+アステージ NTボックス
+商品	外寸			内寸			重量
+NT25	295×443×259		238×358×240		1.2kg
+NT50	425×716×208		362×617×185		2.3kg
+
+PIC16F1768
+電流FBで動かす？
+PWMはRamp+CompでCC制御
+電流低下でブラシ通過とみなす。
+OPアンプでLED駆動
+OPアンプで電流値検出
+
+IC ICSP HC	USB				PU/PD
+1	2		VDD							VDD		
+2			RA5							OSC1			X'tal
+3			RA4							OSC2			X'tal
+4	1		RA3/Vpp/MCLR	外付け2k	RA3				Power SW
+5			RC5				外付け100k	COG1B			HB1 HS nMOS G
+6			RC4				外付け100k	COG1A			HB1 LS pMOS G, G-S間に1nF必要、Self Turn ON抑制
+7			RC3							AN7/OPA2OUT		Current Sense Output <- 20kΩ -+
+8			RC6							AN8/OPA2IN0-	Feed-Back --------------------+-> 1kΩ-> GND
+9			RC7							AN9/OPA2IN0+	Current Sense Input
+10			RB7				内蔵		RB7				Origin SW
+11			RB6				内蔵		RB6				Limit SW			
+12			RB5							AN11/OPA1IN0+	(予備ピン) <- 5bit DAC4 <- 1V FVR
+13			RB4				外付け1k	AN10/OPA1IN0-	LED K Sense -> 1kΩ (for 32uA/step) -> GND
+14			RC2							PWM5/OPA1OUT	LED A Drive	
+15		2	RC1				内蔵		RC1				Double SW
+16		3	RC0				内蔵		RC0				Stop SW
+17			RA2							AN2/RA2			テスト用空きピン
+18	5		RA1/ICSPCLK					
+19	4		RA0/ICSPDAT					DAC2OUT			テスト用空きピン
+20	3	1	VSS							VSS		
+
+Resource
+DAC1		Motor Current Reference (CC-PWM, PFM, Hysteric)
+DAC2		
+DAC3		Motor Current Hysteresis (Hysteric)
+DAC4		Constant Current Regulator for LED
+
+ADC			Current Sense (VF-PWM)
+			Power Supply Voltage Sense (VF-PWM)
+
+T1			Interval time base for FeedBack Control
+T2			Pulse Time Base (PFM)
+T3			
+T4			Key Scan
+T5			Capture Base (CC-PWM, PFM, Hysteric)
+T6			
+
+CCP1/T1		Interval period for FeedBack Control
+CCP2/T5		Capture (CC-PWM, PFM, Hysteric)
+PWM3/T2		Pulse Generator (PFM)
+PWM4		
+PWM5		Constant Current LED Driver (Reserved)
+PWM6		PWM generator (VF-PWM)
+
+COG1		Half Bridge Drive
+
+OPA1		LED Current
+OPA2		Motor Current
+
+Current FeedBack
+	Constant Frequency PWM
+		OPA2
+			+ Input		10bit DAC1 <- 1V FVR (Current Ref)
+			- Input		FB input	x20〜
+			Output		\／\／\／	(Inverted)
+
+		Ramp
+			RISING RAMP GENERATION (MODE<1:0> = 10)
+			lowest setting 0.04V/us
+
+	Hysteric
+		OPA2
+			+ Input		10bit DAC1 <- 1V FVR (Current Ref)
+			- Input		FB input	x20〜
+			Output		\／\／\／	(Inverted)
+
+		Comp1
+			+ Input		OP-amp Output
+			- Input		FVR 1V
+			Output		Reset of SR-FF
+		
+		Comp2
+			+ Input		5bit DAC3 <- FVR 1V
+			- Input		OP-amp Output
+			Output		Set of SR-FF
+	
+	PFM
+		OPA2
+			+ Input		10bit DAC1 <- 1V FVR (Current Ref)
+			- Input		FB input	x20〜
+			Output		\／\／\／	(Inverted)
+
+		Comp1
+			+ Input		OP-amp Output
+			- Input		FVR 1V
+			Output		Mono stable trigger
+		
+		T2
+			Mono Stable
+
+Voltage FeedBack
+	Constant Frequency PWM
+		OPA2
+			+ Input		10bit DAC1 <- 1V FVR (Current Ref)
+			- Input		FB input	x20〜
+			Output		\／\／\／	(Inverted) -> ADC
+
+
+定速ドライバに必要な資源
+・Back-EMFサンプリング周期タイマー
+　高精度発振源必要
+・ADCトリガー用周期タイマー
+　定速制御中は内蔵CR発振器由来のクロックで問題無い。
+　校正中は高精度発振源必要
+・キースキャン用周期タイマー
+　時刻計数
+　　高精度発振源必要
+　自動電源OFF
+　　内蔵CR発振器由来のクロックで問題無い。
+・Motor PWM用周期タイマー
+　内蔵CR発振器由来のクロックで問題無い。
+・LED PWM用周期タイマー
+　内蔵CR発振器由来のクロックで問題無い。
+
+Duty
+VDD*Duty - 0.6*(1-Duty) = control
+VDD*Duty + 0.6*Duty - 0.6 = control
+VDD*Duty + 0.6*Duty = control + 0.6
+(VDD + 0.6)*Duty = control + 0.6
+Duty = (control + 0.6)/(VDD + 0.6)
+
+
+
+
+SAM D10D
+13	18	A1	1	PA02	VDD		EXTINT[2]		AIN[0]		Y[0]	VOUT
+	19	A2	2	PA03	VDD		EXTINT[3]	ADC/VREFA,DAC/VREFA	AIN[1]		Y[1]
+14	20	A3	3	PA04	VDD		EXTINT[4]	ADC/VREFB	AIN[2]	AIN[0]		Y[2]	SERCOM0/PAD[2]	SERCOM0/PAD[0]	TC1/WO[0]	TCC0/WO[0]
+1	1	B2	4	PA05	VDD		EXTINT[5]		AIN[3]	AIN[1]	Y[3]		SERCOM0/PAD[3]	SERCOM0/PAD[1]	TC1/WO[1]	TCC0/WO[1]
+	2	A4	5	PA06	VDD		EXTINT[6]		AIN[4]	AIN[2]	Y[4]		SERCOM0/PAD[0]	SERCOM0/PAD[2]	TC2/WO[0]	TCC0/WO[2]
+	3	B3	6	PA07	VDD		EXTINT[7]		AIN[5]	AIN[3]	Y[5]		SERCOM0/PAD[1]	SERCOM0/PAD[3]	TC2/WO[1]	TCC0/WO[3]
+2	4	B4	7	PA08	VDD	X1	EXTINT[6]						SERCOM1/PAD[2]	SERCOM0/PAD[2]	TCC0/WO[2]	TCC0/WO[4]		GCLK_IO[0]
+3	5	C4	8	PA09	VDD	X2	EXTINT[7]						SERCOM1/PAD[3]	SERCOM0/PAD[3]	TCC0/WO[3]	TCC0/WO[5]		GCLK_IO[1]
+			9	PA10	VDD		EXTINT[2]		AIN[8]	CMP[0]	X[2]/Y[8]		SERCOM0/PAD[2]	SERCOM2/PAD[2]	TC2/WO[0]	TCC0/WO[2]		GCLK_IO[4]
+			10	PA11	VDD		EXTINT[3]		AIN[9]	CMP[1]	X[3]/Y[9]		SERCOM0/PAD[3]	SERCOM2/PAD[3]	TC2/WO[1]	TCC0/WO[3]		GCLK_IO[5]
+4	6	D4	11	PA14	VDD	I2C	NMI		AIN[6]	CMP[0]	X[0]/Y[6]		SERCOM0/PAD[0]	SERCOM2/PAD[0]	TC1/WO[0]	TCC0/WO[0]		GCLK_IO[4]
+5	7	E4	12	PA15	VDD	I2C	EXTINT[1]		AIN[7]	CMP[1]	X[1]/Y[7]		SERCOM0/PAD[1]	SERCOM2/PAD[1]	TC1/WO[1]	TCC0/WO[1]		GCLK_IO[5]
+	8	C3	13	PA16	VDD		EXTINT[0]			X[4]/Y[10]		SERCOM1/PAD[2]	SERCOM2/PAD[2]	TC1/WO[0]	TCC0/WO[6]		GCLK_IO[2]
+			14	PA17	VDD		EXTINT[1]			X[5]/Y[11]		SERCOM1/PAD[3]	SERCOM2/PAD[3]	TC1/WO[1]	TCC0/WO[7]		GCLK_IO[3]
+	9	E3	15	PA22	VDD	I2C	EXTINT[6]			X[6]/Y[12]		SERCOM1/PAD[0]	SERCOM2/PAD[0]	TC1/WO[0]	TCC0/WO[4]		GCLK_IO[1]
+	10	D3	16	PA23	VDD	I2C	EXTINT[7]			X[7]/Y[13]		SERCOM1/PAD[1]	SERCOM2/PAD[1]	TC1/WO[1]	TCC0/WO[5]		GCLK_IO[2]
+			17	PA27	VDD		EXTINT[7]			X[10]						GCLK_IO[0]
+6	11	E2	18	PA28	VDD	RST
+7	12	D2	19	PA30	VDD		EXTINT[2]					SERCOM1/PAD[0]	SERCOM1/PAD[2]	TC2/WO[0]	TCC0/WO[2]	CORTEX_	M0P/SWCLK	GCLK_IO[0]
+8	13	E1	20	PA31	VDD		EXTINT[3]					SERCOM1/PAD[1]	SERCOM1/PAD[3]	TC2/WO[1]	TCC0/WO[3]	SWDIO(2)	GCLK_IO[0]
+9	14	D1	21	PA24(3)	VDD		EXTINT[4]			X[8]/Y[14]		SERCOM1/PAD[2]	SERCOM2/PAD[2]	TCC0/WO[2]	TCC0/WO[4]		GCLK_IO[0]
+10	15	C1	22	PA25(3)	VDD		EXTINT[5]			X[9]/Y[15]		SERCOM1/PAD[3]	SERCOM2/PAD[3]	TCC0/WO[3]			GCLK_IO[0]
+11	16	C2	23	GND
+12	17	B1	24	VDD
+
+13	18	A1	1	PA02	Double SW  	EXTINT[2]	AIN[0]		VOUT
+	19	A2	2	PA03	Stop SW    	EXTINT[3]	AIN[1]		
+14	20	A3	3	PA04	Debug	EXTINT[4]	AIN[2]	AIN[0]	SERCOM0/PAD[0]	TC1/WO[0]	TCC0/WO[0]		CC0-DT-HS
+1	1	B2	4	PA05	CC1-DT-HS	EXTINT[5]	AIN[3]	AIN[1]		TC1/WO[1]	TCC0/WO[1]		CC1-DT-HS
+	2	A4	5	PA06	CC1-DT-HS	EXTINT[6]	AIN[4]	AIN[2]		TC2/WO[0]	TCC0/WO[2]		CC1-DT-HS
+	3	B3	6	PA07	HB1 sense  	EXTINT[7]	AIN[5]	AIN[3]		TC2/WO[1]	TCC0/WO[3]		CC1-DT-HS
+
+2	4	B4	7	PA08	X1
+3	5	C4	8	PA09	X2
+			9	PA10	LED A sense	EXTINT[2]	AIN[8]	CMP[0]		TC2/WO[0]	TCC0/WO[2]		CC1-DT-HS
+			10	PA11	CC1-DT-HS	EXTINT[3]	AIN[9]	CMP[1]		TC2/WO[1]	TCC0/WO[3]		CC1-DT-HS
+4	6	D4	11	PA14	LED K drive	NMI			AIN[6]	CMP[0]		TC1/WO[0]	TCC0/WO[0]		CC0-DT-HS
+5	7	E4	12	PA15	CC1-DT-HS	EXTINT[1]	AIN[7]	CMP[1]		TC1/WO[1]	TCC0/WO[1]		CC1-DT-HS
+
+	8	C3	13	PA16	CC1-DT-LS	EXTINT[0]			TC1/WO[0]	TCC0/WO[6]		CC1-DT-LS
+			14	PA17	CC1-DT-LS	EXTINT[1]			TC1/WO[1]	TCC0/WO[7]		CC1-DT-LS
+	9	E3	15	PA22	CC0-DT-LS	EXTINT[6]			TC1/WO[0]	TCC0/WO[4]		CC0-DT-LS
+	10	D3	16	PA23	CC1-DT-LS	EXTINT[7]			TC1/WO[1]	TCC0/WO[5]		CC1-DT-LS
+			17	PA27	Power SW	EXTINT[7]
+6	11	E2	18	PA28	RST
+
+7	12	D2	19	PA30	Origin SW  	SERCOM1/PAD[0],CORTEX_M0P/SWCLK
+8	13	E1	20	PA31	Limit SW   	SERCOM1/PAD[1],SWDIO(2),GCLK_IO[0]
+9	14	D1	21	PA24	CC1-DT-HS	EXTINT[4]			TCC0/WO[2]	TCC0/WO[4]		CC1-DT-HS	CC0-DT-LS
+10	15	C1	22	PA25	CC1-DT-HS	EXTINT[5]			TCC0/WO[3]		CC1-DT-HS
+11	16	C2	23	GND		GND
+12	17	B1	24	VDD		VDD
+
+☆ Fitトランク開口
+底から12cm
+開口部77cm
+底から27cmの位置に突起部。
+
+買うもの
+コテ先
+900M-T-0.8C	在庫1個, 使用中1個
+900M-T-0.5C
+900M-T-0.8D 安い？
+900M-T-1.2D	在庫1個, 使用中1個, 太い
+
+白ねじ込みフランジ	JIS5K-15A	15A用	461円
+白長ニップル　白 NI	15A用	長さ各種
+
+栃木屋　フレキシブルレベラー	TM-256-4	559円
+イグリデュールJフランジ 内径12mm 外径14, 16, 18
+シミズ精工 フランジユニット ベアリングホルダ付き
+
+1.9mmドリル
+
+CSTNE8M00GH5L000R0	8MHZセラロック
+1		40.00000	¥40
+10		33.40000	¥334
+50		30.08000	¥1,504
+100		26.73000	¥2,673
+500		25.39600	¥12,698
+1,000	21.38500	¥21,385
+
+PIC18F24Q10-I/SP-ND		IC MCU 8BIT 16KB FLASH 28SDIP
+1	137.00000	¥137
+25	125.28000	¥3,132
+100	113.45000	¥11,345
+
+VT6M1T2CRCT-ND	MOSFET N/P-CH 20V 0.1A VMT6
+1		39.00000	¥39
+10		29.30000	¥293
+100		16.59000	¥1,659
+500		10.99200	¥5,496
+1,000	 8.42600	¥8,426
+2,500	 7.32720	¥18,318
+
+DMC2700UDM-7CT-ND	MOSFET N/P-CH 20V SOT26
+1		41.00000	¥41
+10		30.60000	¥306
+100		17.35000	¥1,735
+500		11.48800	¥5,744
+1,000	 8.80600	¥8,806
+
+CSTNR4M00GH5C000R0	CSTNR4M00GH5C000R0	4MHZセラロック
+1		56.00000	¥56
+10		46.80000	¥468
+50		42.10000	¥2,105
+100		37.44000	¥3,744
+500		35.56200	¥17,781
+1,000	29.94700	¥29,947
+
+CSTNE16M0VH3C000R0	CSTNE16M0VH3C000R0	16MHZセラロック
+1		50.00000	¥50
+10		41.80000	¥418
+50		37.64000	¥1,882
+100		33.45000	¥3,345
+500		31.77200	¥15,886
+1,000	26.75600	¥26,756
+
+http://park12.wakwak.com/~sakai/Hinged-EQ-Pedestal/Poncet450.dxf
+http://park12.wakwak.com/~sakai/Hinged-EQ-Pedestal/16in-Mount.dxf
+
+ハイロジック ユニクロロングプレート 46.2×46.2×100mm F-988	202円
+28ｼﾞｮｲﾝﾄ 1ｺ入 J-103 AAS S IVO	88円
+
+
+No.	注文コード	メーカー名	商品名	品番	販売単価	数量	小計
+1	60768243	エヌティーエヌ(NTN)	ミニフランジユニット	B-BAF1214-5	319	1	319
+2	60768277	エヌティーエヌ(NTN)	ミニフランジユニット	B-BAF2022-5	549	1	549
+3	07029267	NACHI(不二越)	単式スラスト玉軸受 51200番台	51201	599	1	599
+4	07149922	小原歯車工業(KHK)	DS成形平歯車	DS1-80	399	1	399
+5	00460713	オイレス工業	オイレス#80 フランジブッシュ	80F-1212	31	1	31
+6	00460722	オイレス工業	オイレス#80 フランジブッシュ	80F-1215	31	1	31
+7	75810174	スターエム	先三角ショートビット	5B-140	739	1	739
+8	44178068	大阪継手バルブ	鋳鉄製ねじ込みフランジJIS FCD450 5K合フランジ 白	70	289	1	289
+　	　	　	　	　	　	　	　
+　	　	　	　	　	　	　	　
+RC300モーター
+23.3ms/rotation
+peak	1350mV
+valley	1100mV
+
+TWIN MOTOR GEARBOX		1
+8Tカーボン強化ピニオン	1
+60mmシャフト			1	出力用
+DS0.8-15				1
+
+TWIN MOTOR GEARBOX
+8Tカーボン強化ピニオン	1
+123Aピニオン			1
+60mmシャフト			1	出力用
+DOUBLE GEARBOX			2
+10Tピニオン				2
+樹脂ワッシャー			2
+70mmシャフト			2	出力用
+DS0.8-15				3
+
+DOUBLE GEARBOX			1
+10Tピニオン				1
+樹脂ワッシャー			1
+123Aピニオン			1
+60mmシャフト			1	連結用
+70mmシャフト			1	出力用
+DS0.8-15				1
+
+スイベルパッド
+スラストパッド＋グラブスクリュー
+レベリングフット
+スタッドレベリングフット
+フレキシブルレベラー　短いけど安い、
+レベリングボルト(穴付)、穴付アジャストボルト、穴径が13, 20, 24
+
+3本入り電池ボックスは、八幡ネジ 皿タッピング 2.6×10 がよさそう。下穴は1.5mmか2mmか。
+2本入り電池ボックスは、八幡ネジ なべタッピング 2.6×10 がよさそう。下穴は1.5mmか2mmか。
+
+ダブルギヤボックス改の出力シャフト長は最低47mm(ギヤボックス内終端)か58mm。
+	ネジ部18mmとして65mmか76mm必要なので、公差1～4mmを考慮して、70mmか80mmのM3半ネジ。
+	ウォーム軸～ギアボックス	13+12=25mm			M1: 50	M0.8: 62.5		M0.8: 15-50
+								13+12+12=37mm		M1: 74	M0.8: 92.5		M0.8: 15-15-50
+
+6速ギヤボックスHEの出力シャフト長は最低44mm。
+	ネジ部20mmとして64mm必要なので、公差1～4mmを考慮して、70mmのM4半ネジ。
+	ウォーム軸～ギアボックス	15.2+12=27.2mm		M1: 54	M0.8: 68		M1: 12-45	M0.8: 16-56
+																				11-44		13-55
+
+4速クランクギヤーボックスセットの出力シャフト長は最低26mm。
+	ネジ部18mmとして44mm必要なので、公差1～4mmを考慮して、50mmのM3半ネジ。
+	ウォーム軸～ギアボックス	11+12=23mm			M1: 46	M0.8: 57.5		M0.8: 15-45
+
+ツインモーターギヤボックス改の出力シャフト長は最低38mm(ギヤボックス内終端)か49mm。
+	ネジ部18mmとして56mmか67mm必要なので、公差1～4mmを考慮して、60mmか70mmのM3半ネジ。
+	ウォーム軸～ギアボックス	17+12=29mm			M1: 58	M0,8: 72.5		M0.8: 15-64
+
+クラッチ機能を付ける場合
+DS1-12  (歯底円 10,0mm)
+	M4セレート付きフランジナット(外径10mm)
+	M4四角ナット(対辺7.0mm, 対角線9.9mm)
+DS0.8-16(歯底円 11.2mm)
+	M4セレート付きフランジナット(つば大, 外径11mm)
+	M4板ナット(対辺7.5mm, 対角線10.6mm)
+	M3四角ナット(M4フレーム用, 対辺8.0mm, 対角線10.6mm実測)
+	M4セレート付きフランジナット(外径10mm)
+DS0.8-12(歯底円  8.0mm)
+	M3セレート付きフランジナット(外径8mm)
+	M3四角ナット(対辺5.5mm, 対角線7.8mm)
+DS0.8-15(歯底円 10.4mm)
+	M3セレート付きフランジナット(つば大, 外径10mm)
+	M3四角ナット(M4フレーム用, 対辺8.0mm, 対角線10.6mm実測)
+	M3板ナット(対辺6.0mm, 対角線8.5mm)
+
+
+マサル工業 エムケーダクト MD01～MD05 40x20 t1.5 
+
+DACを使ったプリチャージはほとんど効果なし。
+Fast decay dischargeの後、開放で放置しておくと電位がふらついて不安定になる。
+Fast Decayの後、Slow Decayに切り替えて待つのが安定。
+
+岩田製作所 ベアリングローラー(シャフト用)	12mmシャフト用が使える。
+
+丸ボス
+注文コード	品番    	Φ	L	M	ねじ質量	基準価格	税別	税込
+70241657	H-10-101	8	10	3	M3	3.5		￥70		￥68	￥75	ホシモト
+70241666	H-10-102	8	10	4	M4	3.2		￥70		￥68	￥75	ホシモト
+70241675	H-10-103	8	15	4	M4	4.8		￥70		￥68	￥75	ホシモト
+70241684	H-10-104	8	20	5	M5	5.5		￥70		￥68	￥75	ホシモト
+70241693	H-10-105	10	10	3	M3	5.7		￥70		￥68	￥75	ホシモト
+89202793	H-10-16 	10	10	4	M4			￥25		￥24	￥26	ホシモト
+42114265	M4×10×10	10	10	4	M4						￥399	￥439	1パック(4個)	モノタロウ
+89202775	H-10-14 	10	10	5	M5			￥25		￥24	￥26	ホシモト
+70241702	H-10-106	10	10	6	M6	4.5		￥70		￥68	￥75	ホシモト
+70242165	SH-10-106	10	10	6	M6	4.5		￥150		￥149	￥164	ホシモト
+70241718	H-10-107	10	12	4	M4	6.5		￥70		￥68	￥75	ホシモト
+70241727	H-10-108	10	12	5	M5	6		￥70		￥68	￥75	ホシモト
+70241736	H-10-109	10	12	6	M6	5.4		￥70		￥68	￥75	ホシモト
+89202784	H-10-15 	10	15	4	M4			￥25		￥24	￥26	ホシモト
+89202942	H-10-32 	10	15	5	M5			￥45		￥44	￥48	ホシモト
+70241745	H-10-110	10	15	6	M6	6.7		￥70		￥68	￥75	ホシモト
+70242174	SH-10-110	10	15	6	M6	6.7		￥160		￥159	￥175	ホシモト
+89202933	H-10-31 	10	20	4	M4			￥50		￥49	￥54	ホシモト
+89202915	H-10-29 	10	20	5	M5			￥50		￥49	￥54	ホシモト
+70241754	H-10-111	10	20	6	M6	8.9		￥70		￥68	￥75	ホシモト
+70241763	H-10-112	12	10	4	M4	8.1		￥70		￥68	￥75	ホシモト
+89202802	H-10-17 	12	10	5	M5			￥25		￥24	￥26	ホシモト
+89202897	H-10-26 	12	10	6	M6			￥30		￥29	￥32	ホシモト
+70241772	H-10-113	12	12	5	M5	9.2		￥70		￥68	￥75	ホシモト
+70241788	H-10-114	12	12	6	M6	8.6		￥70		￥68	￥75	ホシモト
+89202951	H-10-33 	12	15	5	M5			￥45		￥44	￥48	ホシモト
+89202967	H-10-34 	12	15	6	M6			￥45		￥44	￥48	ホシモト
+70241797	H-10-115	12	18	5	M5	13.9	￥70		￥68	￥75	ホシモト
+70241806	H-10-116	12	18	6	M6	12.9	￥70		￥68	￥75	ホシモト
+70241815	H-10-117	12	20	5	M5	15.4	￥70		￥68	￥75	ホシモト
+70242183	SH-10-118	12	20	6	M6	14.4	￥160		￥159	￥175	ホシモト
+70241824	H-10-118	12	20	6	M6	14.3	￥70		￥68	￥75	ホシモト
+70241833	H-10-119	12	25	5	M5	19.3	オープン	￥71	￥78	ホシモト
+70241842	H-10-120	12	25	6	M6	17.9	オープン	￥71	￥78	ホシモト
+70242192	SH-10-120	12	25	6	M6	18		￥180		￥179	￥197	ホシモト
+89202811	H-10-18 	15	10	4	M4			￥25		￥24	￥26	ホシモト
+89202766	H-10-13 	15	10	5	M5			￥25		￥24	￥26	ホシモト
+42644035	TM-208-1	15	10	5	M5	12.25				￥45	￥50	栃木屋
+42114274	M5×15×10	15	10	5	M5						￥399	￥439	1パック(3個)	モノタロウ
+89202741	H-10-11 	15	10	6	M6			￥25		￥24	￥26	ホシモト
+42644044	TM-208-2	15	10	6	M6	11.7				￥46	￥51	栃木屋
+42114292	M6×15×10	15	10	6	M6						￥399	￥439	1パック(3個)	モノタロウ
+70242208	SH-10-120-1	15	10	8	M8	10		￥170		￥169	￥186	ホシモト
+70241858	H-10-120-1	15	10	8	M8	10		￥60		￥58	￥64	ホシモト
+70241867	H-10-121	15	12	5	M5	15.2	￥70		￥68	￥75	ホシモト
+70241876	H-10-122	15	12	6	M6	14.6	￥70		￥68	￥75	ホシモト
+70241885	H-10-123	15	12	8	M8	13		￥70		￥68	￥75	ホシモト
+89202924	H-10-30 	15	15	4	M4			￥50		￥49	￥54	ホシモト
+89202757	H-10-12 	15	15	5	M5			￥27		￥26	￥29	ホシモト
+42114283	M5×15×15	15	15	5	M5						￥399	￥439	1パック(3個)	モノタロウ
+42644053	TM-208-3	15	15	5	M5	18.3				￥45	￥50	栃木屋
+89202732	H-10-10 	15	15	6	M6			￥27		￥26	￥29	ホシモト
+42114301	M6×15×15	15	15	6	M6						￥399	￥439	1パック(3個)	モノタロウ
+42644062	TM-208-4	15	15	6	M6	17.65				￥53	￥58	栃木屋
+89202705	H-10-7  	15	15	8	M8			￥27		￥26	￥29	ホシモト
+42114326	M8×15×15	15	15	8	M8						￥399	￥439	1パック(3個)	モノタロウ
+70241894	H-10-124	15	18	5	M5	22.8	￥75		￥73	￥80	ホシモト
+70241903	H-10-125	15	18	6	M6	21.9	￥75		￥73	￥80	ホシモト
+70241912	H-10-126	15	18	8	M8	19.4	￥75		￥73	￥80	ホシモト
+89202906	H-10-27 	15	20	5	M5			￥70		￥68	￥75	ホシモト
+42114317	M6×15×20	15	20	6	M6						￥399	￥439	1パック(3個)	モノタロウ
+89202723	H-10-9  	15	20	6	M6			￥30		￥29	￥32	ホシモト
+89202696	H-10-6  	15	20	8	M8			￥30		￥29	￥32	ホシモト
+42644078	TM-208-5	15	20	8	M8	20.5				￥71	￥78	栃木屋
+42114335	M8×15×20	15	20	8	M8						￥399	￥439	1パック(3個)	モノタロウ
+70241928	H-10-127	15	25	5	M5	31.7	オープン	￥79	￥87	ホシモト
+70242217	SH-10-128	15	25	6	M6	30.6	￥250		￥249	￥274	ホシモト
+70241937	H-10-128	15	25	6	M6	30.4	オープン	￥79	￥87	ホシモト
+70241946	H-10-129	15	25	8	M8	27		オープン	￥79	￥87	ホシモト
+70241955	H-10-130	15	28	6	M6	34.1	オープン	￥86	￥95	ホシモト
+70241964	H-10-131	15	29	8	M8	30.2	オープン	￥83	￥91	ホシモト
+70241973	H-10-132	15	30	5	M5	38.1	￥85		￥82	￥90	ホシモト
+89202881	H-10-25 	15	30	6	M6			￥80		￥78	￥86	ホシモト
+89202863	H-10-23 	15	30	8	M8			￥80		￥78	￥86	ホシモト
+70241982	H-10-133	15	35	5	M5	44.4	オープン	￥96	￥106	ホシモト
+70241998	H-10-134	15	35	6	M6	42.6	オープン	￥92	￥101	ホシモト
+70242007	H-10-135	15	35	8	M8	37.8	オープン	￥92	￥101	ホシモト
+70242016	H-10-136	15	40	6	M6	48.7	オープン	￥100	￥110	ホシモト
+70242025	H-10-137	15	40	8	M8	43.2	オープン	￥100	￥110	ホシモト
+42114344	M8×19×15	19	15	8	M8						￥399	￥439	1パック(3個)	モノタロウ
+42114353	M8×19×18	19	18	8	M8						￥399	￥439	1パック(3個)	モノタロウ
+42114362	M8×19×20	19	20	8	M8						￥399	￥439	1パック(3個)	モノタロウ
+89202714	H-10-8  	20	10	6	M6			￥35		￥34	￥37	ホシモト
+70242034	H-10-138	20	10	8	M8	21.6	オープン	￥83	￥91	ホシモト
+70242043	H-10-139	20	10	10	M10	19.7	オープン	￥83	￥91	ホシモト
+70242052	H-10-140	20	12	5	M5	28.2	￥80		￥78	￥86	ホシモト
+70242068	H-10-141	20	12	6	M6	27.5	￥80		￥78	￥86	ホシモト
+70242077	H-10-142	20	12	8	M8	25.9	￥80		￥78	￥86	ホシモト
+70242086	H-10-143	20	15	6	M6	34.4	￥85		￥82	￥90	ホシモト
+89202687	H-10-5  	20	15	8	M8			￥35		￥34	￥37	ホシモト
+42114371	M8×20×15	20	15	8	M8						￥399	￥439	1パック(2個)	モノタロウ
+70242095	H-10-144	20	15	10	M10	29.6	￥85		￥82	￥90	ホシモト
+42114405	M10×20×15	20	15	10	M10						￥399	￥439	1パック(2個)	モノタロウ
+89202872	H-10-24 	20	20	6	M6			￥70		￥68	￥75	ホシモト
+89202671	H-10-4  	20	20	8	M8			￥40		￥39	￥43	ホシモト
+42644087	TM-208-6	20	20	8	M8	41.3				￥76	￥84	栃木屋
+42114387	M8×20×20	20	20	8	M8						￥399	￥439	1パック(2個)	モノタロウ
+89202845	H-10-21 	20	20	10	M10			￥70		￥68	￥75	ホシモト
+42114414	M10×20×20	20	20	10	M10						￥399	￥439	1パック(2個)	モノタロウ
+89202827	H-10-19 	20	20	12	M12			￥70		￥68	￥75	ホシモト
+89202662	H-10-3  	20	25	8	M8			￥50		￥49	￥54	ホシモト
+89202836	H-10-20 	20	25	10	M10			￥90		￥88	￥97	ホシモト
+42114396	M8×20×30	20	30	8	M8						￥399	￥439	1パック(2個)	モノタロウ
+89202653	H-10-2  	20	30	8	M8			￥60		￥59	￥65	ホシモト
+42644096	TM-208-7	20	30	8	M8	62.4				￥109	￥120	栃木屋
+89202644	H-10-1  	20	30	10	M10			￥70		￥68	￥75	ホシモト
+42114423	M10×20×30	20	30	10	M10						￥399	￥439	1パック(2個)	モノタロウ
+70242104	H-10-145	25	15	8	M8	53.2	￥120		￥119	￥131	ホシモト
+70242113	H-10-146	25	15	10	M10	50.4	￥120		￥119	￥131	ホシモト
+70242122	H-10-147	25	20	8	M8	70.9	￥130		￥129	￥142	ホシモト
+70242138	H-10-148	25	20	10	M10	67.1	￥130		￥129	￥142	ホシモト
+70242147	H-10-149	25	20	12	M12	61.8	￥130		￥129	￥142	ホシモト
+89202854	H-10-22 	25	25	8	M8			￥90		￥88	￥97	ホシモト
+70242156	H-10-150	25	25	12	M12	77.3	￥140		￥139	￥153	ホシモト
+
+セットカラー
+注文コード	品番	内径	外径	幅		面取径	質量	税別	税込
+32623035	M0505	5		11		5		-		3		￥86 	￥95    モノタロウ
+32623044	M0605	6		12		5		-		3		￥95 	￥105   モノタロウ
+32623053	M0805	8		14		5		-		4		￥109	￥120   モノタロウ
+32623062	M0808	8		16		8		13		9		￥109	￥120   モノタロウ
+32623071	M1005	10		16		5		-		5		￥119	￥131   モノタロウ
+32623087	M1006	10		18		6		16		8		￥119	￥131   モノタロウ
+32623096	M1010	10		20		10		16		17		￥119	￥131   モノタロウ
+32623105	M1206	12		20		6		-		9		￥129	￥142   モノタロウ
+32623114	M1208	12		22		8		20		16		￥129	￥142   モノタロウ
+32623123	M1212	12		26		12		20		36		￥129	￥142   モノタロウ
+32623132	M2007	20		30		7		-		21		￥199	￥219   モノタロウ
+32623141	M2015	20		32		15		29		55		￥199	￥219   モノタロウ
+32623157	M2518	25		42		18		38		122		￥279	￥307   モノタロウ
+注文コード	品番		内径	外径		幅			面取径	材質	基準	税別	税込    岩田製作所
+06940561	SC0305C 	3		7(±0.1)	5(±0.1)	-		S45C	￥90	￥77	￥85    岩田製作所
+06940586	SC0308C 	3		7(±0.1)	8(±0.1)	-		S45C	￥90	￥77	￥85    岩田製作所
+06940595	SC0405C 	4		8(±0.1)	5(±0.1)	-		S45C	￥110	￥109	￥120   岩田製作所
+06940604	SC0406C 	4		12(±0.1)	6(±0.1)	-		S45C	￥110	￥109	￥120   岩田製作所
+06940613	SC0408C 	4		12(±0.1)	8(±0.1)	-		S45C	￥110	￥109	￥120   岩田製作所
+06940622	SC0505C 	5		11(±0.1)	5(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940631	SC0506C 	5		14(±0.1)	6(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940647	SC0508C 	5		14(±0.1)	8(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940656	SC0510C 	5		14(±0.1)	10(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940665	SC0605C 	6		12(±0.1)	5(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940674	SC0606C 	6		15(±0.1)	6(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940683	SC0608C 	6		15(±0.1)	8(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940692	SC0610C 	6		16(±0.1)	10(±0.1)	-		S45C	￥120	￥119	￥131   岩田製作所
+06940701	SC0805C 	8		14(±0.1)	5(±0.1)	-		S45C	￥140	￥139	￥153   岩田製作所
+06940717	SC0806C 	8		16(±0.1)	6(±0.1)	13		S45C	￥140	￥139	￥153   岩田製作所
+06940726	SC0808C 	8		16(±0.1)	8(±0.1)	13		S45C	￥140	￥139	￥153   岩田製作所
+06940735	SC0810C 	8		18(±0.1)	10(±0.1)	13		S45C	￥140	￥139	￥153   岩田製作所
+06940744	SC1005C 	10		16(±0.1)	5(±0.1)	-		S45C	￥140	￥139	￥153   岩田製作所
+06940753	SC1006C 	10		18(±0.1)	6(±0.1)	16		S45C	￥140	￥139	￥122   岩田製作所
+06940762	SC1008C 	10		18(±0.1)	8(±0.1)	16		S45C	￥140	￥139	￥153   岩田製作所
+06940771	SC1010C 	10		20(±0.1)	10(±0.1)	16		S45C	￥140	￥139	￥153   岩田製作所
+06940787	SC1206C 	12		20(±0.1)	6(±0.1)	-		S45C	￥160	￥159	￥175   岩田製作所
+06940796	SC1208C 	12		22(±0.1)	8(±0.1)	20		S45C	￥160	￥159	￥175   岩田製作所
+06940805	SC1210C 	12		26(±0.1)	10(±0.1)	20		S45C	￥160	￥159	￥175   岩田製作所
+06940814	SC1212C 	12		26(±0.1)	12(±0.1)	20		S45C	￥160	￥159	￥175   岩田製作所
+06940823	SC1306C 	13		20(±0.1)	6(±0.1)	-		S45C	￥180	￥179	￥197   岩田製作所
+06940832	SC1308C 	13		22(±0.1)	8(±0.1)	20		S45C	￥180	￥179	￥197   岩田製作所
+06940841	SC1310C 	13		26(±0.1)	10(±0.1)	20		S45C	￥180	￥179	￥197   岩田製作所
+06940857	SC1412C 	14		26(±0.1)	12(±0.1)	20		S45C	￥210	￥209	￥230   岩田製作所
+06940866	SC1506C 	15		24(±0.1)	6(±0.1)	-		S45C	￥210	￥209	￥230   岩田製作所
+06940875	SC1508C 	15		25(±0.1)	8(±0.1)	24		S45C	￥210	￥209	￥230   岩田製作所
+06940884	SC1510C 	15		25(±0.1)	10(±0.1)	24		S45C	￥210	￥209	￥230   岩田製作所
+06940893	SC1512C 	15		28(±0.1)	12(±0.1)	24		S45C	￥210	￥209	￥230   岩田製作所
+06940902	SC1606C 	16		24(±0.1)	6(±0.1)	-		S45C	￥220	￥209	￥230   岩田製作所
+06940911	SC1608C 	16		28(±0.1)	8(±0.1)	24		S45C	￥220	￥209	￥230   岩田製作所
+06940927	SC1610C 	16		28(±0.1)	10(±0.1)	24		S45C	￥220	￥209	￥230   岩田製作所
+06940936	SC1612C 	16		28(±0.1)	12(±0.1)	24		S45C	￥220	￥209	￥230   岩田製作所
+06940945	SC1710C 	17		30(±0.1)	10(±0.1)	26		S45C	￥250	￥229	￥252   岩田製作所
+06940954	SC1712C 	17		32(±0.1)	12(±0.1)	26		S45C	￥250	￥229	￥252   岩田製作所
+06940963	SC1815C 	18		32(±0.1)	15(±0.1)	29		S45C	￥250	￥229	￥252   岩田製作所
+06940972	SC2007C 	20		30(±0.1)	7(±0.1)	-		S45C	￥250	￥229	￥252   岩田製作所
+06940981	SC2010C 	20		32(±0.1)	10(±0.1)	29		S45C	￥250	￥229	￥252   岩田製作所
+06940997	SC2012C 	20		32(±0.1)	12(±0.1)	29		S45C	￥250	￥229	￥252   岩田製作所
+06941006	SC2015C 	20		32(±0.1)	15(±0.1)	29		S45C	￥250	￥229	￥252   岩田製作所
+06941015	SC2218C 	22		38(±0.1)	18(±0.1)	34		S45C	￥330	￥299	￥329   岩田製作所
+06941024	SC2512C 	25		38(±0.1)	12(±0.1)	37		S45C	￥330	￥299	￥329   岩田製作所
+06941033	SC2515C 	25		38(±0.1)	15(±0.1)	37		S45C	￥330	￥299	￥329   岩田製作所
+06941042	SC2518C 	25		42(±0.1)	18(±0.1)	38		S45C	￥330	￥299	￥329   岩田製作所
+06941051	SC2818C 	28		45(±0.1)	18(±0.1)	40		S45C	￥380	￥349	￥384   岩田製作所
+06941067	SC3014C 	30		45(±0.1)	14(±0.1)	42		S45C	￥380	￥349	￥384   岩田製作所
+06941076	SC3016C 	30		45(±0.1)	16(±0.1)	42		S45C	￥380	￥349	￥384   岩田製作所
+06941085	SC3018C 	30		49(±0.1)	18(±0.1)	42		S45C	￥380	￥349	￥384   岩田製作所
+06941094	SC3020C 	30		49(±0.1)	20(±0.1)	42		S45C	￥380	￥349	￥384   岩田製作所
+06941103	SC3220C 	32		53(±0.1)	20(±0.1)	44		S45C	￥480	￥419	￥461   岩田製作所
+06941112	SC3515C 	35		50(±0.1)	15(±0.1)	47		S45C	￥480	￥419	￥461   岩田製作所
+06941121	SC3518C 	35		55(±0.1)	18(±0.1)	47		S45C	￥480	￥419	￥461   岩田製作所
+06941137	SC3520C 	35		59(±0.1)	20(±0.1)	47		S45C	￥480	￥419	￥461   岩田製作所
+06941146	SC3822C 	38		64(±0.1)	22(±0.1)	50		S45C	￥820	￥708	￥779   岩田製作所
+06941155	SC4018C 	40		60(±0.1)	18(±0.1)	55		S45C	￥820	￥708	￥779   岩田製作所
+06941164	SC4022C 	40		72(±0.1)	22(±0.1)	55		S45C	￥820	￥708	￥779   岩田製作所
+06941173	SC4522C 	45		75(±0.1)	22(±0.1)	60		S45C	￥900	￥779	￥857   岩田製作所
+06941182	SC5020C 	50		70(±0.1)	20(±0.1)	65		S45C	￥930	￥799	￥879   岩田製作所
+06941191	SC5025C 	50		79(±0.1)	25(±0.1)	65		S45C	￥930	￥799	￥879   岩田製作所
+06941207	SC5528C 	55		81(±0.1)	28(±0.1)	70		S45C	￥1,450	￥1,390	￥1,223 岩田製作所
+06941216	SC6028C 	60		88(±0.1)	28(±0.1)	75		S45C	￥1,600	￥1,590	￥1,749 岩田製作所
+06941225	SC6528C 	65		94(±0.1)	28(±0.1)	85		S45C	￥2,100	￥1,890	￥2,079 岩田製作所
+06941234	SC7032C 	70		113(±0.1)	32(±0.1)	90		S45C	￥3,100	￥2,790	￥3,069 岩田製作所
+06941243	SC7532C 	75		119(±0.1)	32(±0.1)	95		S45C	￥3,900	￥3,590	￥3,949 岩田製作所
+06941252	SC8032C 	80		126(±0.1)	32(±0.1)	105		S45C	￥4,200	￥3,790	￥4,169 岩田製作所
+
+注文コード	品番		内径	外径	寸法L	P.C.D.	寸法S	材質	基準	税別	税込	岩田製作所
+37733586	SC0306CP2	3		17		6		11		3.4		S45C/黒	￥240	￥239	￥263	岩田製作所
+37733595	SC0406CP2	4		18		6		12		3.4		S45C/黒	￥240	￥239	￥263	岩田製作所
+37733604	SC0510CP2	5		22		10		15		4.5		S45C/黒	￥280	￥269	￥296	岩田製作所
+37733613	SC0610CP2	6		22		10		15		4.5		S45C/黒	￥280	￥269	￥296	岩田製作所
+37733622	SC0810CP2	8		24		10		17		4.5		S45C/黒	￥300	￥289	￥318	岩田製作所
+37733631	SC1010CP2	10		26		10		19		4.5		S45C/黒	￥300	￥289	￥318	岩田製作所
+37733647	SC1212CP2	12		32		12		23		5.5		S45C/黒	￥380	￥359	￥395	岩田製作所
+37733656	SC1312CP2	13		33		12		24		5.5		S45C/黒	￥380	￥359	￥395	岩田製作所
+37733665	SC1512CP2	15		35		12		26		5.5		S45C/黒	￥420	￥399	￥439	岩田製作所
+37733674	SC1612CP2	16		40		12		28		6.6		S45C/黒	￥420	￥399	￥439	岩田製作所
+37733683	SC2012CP2	20		44		12		32		6.6		S45C/黒	￥500	￥479	￥527	岩田製作所
+37733692	SC2515CP2	25		50		15		37		6.6		S45C/黒	￥650	￥599	￥659	岩田製作所
+37733701	SC3015CP2	30		55		15		42		6.6		S45C/黒	￥700	￥658	￥724	岩田製作所
+37733717	SC3515CP2	35		60		15		47		6.6		S45C/黒	￥950	￥889	￥978	岩田製作所
+37733726	SC4020CP2	40		70		20		55		9		S45C/黒	￥1,250	￥1,190	￥1,309	岩田製作所
+37733735	SC5025CP2	50		86		25		68		11		S45C/黒	￥1,700	￥1,690	￥1,859	岩田製作所
+37733744	SC0306MP2	3		17		6		11		3.4		S45C/Ni	￥260	￥249	￥274	岩田製作所
+37733753	SC0406MP2	4		18		6		12		3.4		S45C/Ni	￥260	￥249	￥274	岩田製作所
+37733762	SC0510MP2	5		22		10		15		4.5		S45C/Ni	￥300	￥289	￥318	岩田製作所
+37733771	SC0610MP2	6		22		10		15		4.5		S45C/Ni	￥300	￥289	￥318	岩田製作所
+37733787	SC0810MP2	8		24		10		17		4.5		S45C/Ni	￥320	￥299	￥329	岩田製作所
+37733796	SC1010MP2	10		26		10		19		4.5		S45C/Ni	￥320	￥299	￥329	岩田製作所
+37733805	SC1212MP2	12		32		12		23		5.5		S45C/Ni	￥400	￥389	￥428	岩田製作所
+37733814	SC1312MP2	13		33		12		24		5.5		S45C/Ni	￥400	￥389	￥428	岩田製作所
+37733823	SC1512MP2	15		35		12		26		5.5		S45C/Ni	￥500	￥479	￥527	岩田製作所
+37733832	SC1612MP2	16		40		12		28		6.6		S45C/Ni	￥500	￥479	￥527	岩田製作所
+37733841	SC2012MP2	20		44		12		32		6.6		S45C/Ni	￥550	￥519	￥571	岩田製作所
+37733857	SC2515MP2	25		50		15		37		6.6		S45C/Ni	￥700	￥658	￥724	岩田製作所
+37733866	SC3015MP2	30		55		15		42		6.6		S45C/Ni	￥800	￥759	￥835	岩田製作所
+37733875	SC3515MP2	35		60		15		47		6.6		S45C/Ni	￥1,050	￥979	￥1,077	岩田製作所
+37733884	SC4020MP2	40		70		20		55		9		S45C/Ni	￥1,400	￥1,390	￥1,529	岩田製作所
+37733893	SC5025MP2	50		86		25		68		11		S45C/Ni	￥1,900	￥1,890	￥2,079	岩田製作所
+37733902	SC0306SP2	3		17		6		11		3.4		SUS304	￥360	￥339	￥373	岩田製作所
+37733911	SC0406SP2	4		18		6		12		3.4		SUS304	￥360	￥339	￥373	岩田製作所
+37733927	SC0510SP2	5		22		10		15		4.5		SUS304	￥450	￥419	￥461	岩田製作所
+37733936	SC0610SP2	6		22		10		15		4.5		SUS304	￥450	￥419	￥461	岩田製作所
+37733945	SC0810SP2	8		24		10		17		4.5		SUS304	￥500	￥479	￥527	岩田製作所
+37733954	SC1010SP2	10		26		10		19		4.5		SUS304	￥500	￥479	￥527	岩田製作所
+37733963	SC1212SP2	12		32		12		23		5.5		SUS304	￥650	￥599	￥659	岩田製作所
+37733972	SC1312SP2	13		33		12		24		5.5		SUS304	￥650	￥599	￥659	岩田製作所
+37733981	SC1512SP2	15		35		12		26		5.5		SUS304	￥750	￥699	￥769	岩田製作所
+37733997	SC1612SP2	16		40		12		28		6.6		SUS304	￥750	￥699	￥769	岩田製作所
+37734006	SC2012SP2	20		44		12		32		6.6		SUS304	￥1,100	￥999	￥1,099	岩田製作所
+37734015	SC2515SP2	25		50		15		37		6.6		SUS304	￥1,300	￥1,290	￥1,419	岩田製作所
+37734024	SC3015SP2	30		55		15		42		6.6		SUS304	￥1,600	￥1,590	￥1,749	岩田製作所
+37734033	SC3515SP2	35		60		15		47		6.6		SUS304	￥1,800	￥1,790	￥1,969	岩田製作所
+37734042	SC4020SP2	40		70		20		55		9		SUS304	￥3,000	￥2,790	￥3,069	岩田製作所
+37734051	SC5025SP2	50		86		25		68		11		SUS304	￥4,200	￥3,990	￥4,389	岩田製作所
+
+注文コード	品番	寸法L	内径	外径	面取径	付属品	基準	税別	販売	税込	片山チエン
+10295013	KSC0305	5		3		7		-		止めねじ1本	￥140	￥109	￥109	￥120	片山チエン
+10295022	KSC0306	6		3		7		-		止めねじ1本	￥140	￥109	￥109	￥120	片山チエン
+10295031	KSC0308	8		3		7		-		止めねじ1本	￥140	￥109	￥109	￥120	片山チエン
+10295047	KSC0405	5		4		8		-		止めねじ1本	￥140	￥109	￥109	￥120	片山チエン
+10295056	KSC0406	6		4		12		-		止めねじ1本	￥140	￥109	￥109	￥120	片山チエン
+10295065	KSC0408	8		4		12		-		止めねじ1本	￥160	￥119	￥119	￥131	片山チエン
+10295074	KSC0505	5		5		11		-		止めねじ1本	￥130	￥108	￥108	￥119	片山チエン
+10295083	KSC0506	6		5		14		-		止めねじ1本	￥130	￥108	￥108	￥119	片山チエン
+10295092	KSC0508	8		5		14		-		止めねじ1本	￥130	￥108	￥108	￥119	片山チエン
+10295101	KSC0510	10		5		14		-		止めねじ1本	￥160	￥129	￥129	￥142	片山チエン
+10295117	KSC0605	5		6		12		-		止めねじ2本	￥180	￥139	￥139	￥153	片山チエン
+10295126	KSC0606	6		6		15		-		止めねじ1本	￥180	￥139	￥139	￥153	片山チエン
+10295135	KSC0608	8		6		15		-		止めねじ1本	￥180	￥139	￥139	￥153	片山チエン
+10295144	KSC0610	10		6		16		-		止めねじ1本	￥180	￥139	￥139	￥153	片山チエン
+10295153	KSC0805	5		8		14		-		止めねじ2本	￥180	￥139	￥139	￥153	片山チエン
+10295162	KSC0806	6		8		16		13		止めねじ2本	￥180	￥139	￥139	￥153	片山チエン
+10295171	KSC0808	8		8		16		13		止めねじ2本	￥180	￥139	￥139	￥153	片山チエン
+10295187	KSC0810	10		8		18		13		止めねじ2本	￥200	￥159	￥159	￥175	片山チエン
+10295196	KSC1005	5		10		16		-		止めねじ2本	￥180	￥139	￥139	￥153	片山チエン
+10295205	KSC1006	6		10		18		16		止めねじ2本	￥210	￥169	￥169	￥186	片山チエン
+10295214	KSC1008	8		10		18		16		止めねじ2本	￥210	￥169	￥169	￥186	片山チエン
+10295223	KSC1010	10		10		20		16		止めねじ2本	￥210	￥169	￥169	￥186	片山チエン
+10295232	KSC1206	6		12		20		-		止めねじ2本	￥210	￥169	￥169	￥186	片山チエン
+10295241	KSC1208	8		12		22		20		止めねじ2本	￥240	￥189	￥151	￥166	片山チエン
+10295257	KSC1210	10		12		26		20		止めねじ2本	￥240	￥189	￥189	￥208	片山チエン
+10295266	KSC1212	12		12		26		20		止めねじ2本	￥240	￥189	￥189	￥208	片山チエン
+10295275	KSC1306	6		13		20		-		止めねじ2本	￥220	￥169	￥169	￥186	片山チエン
+10295284	KSC1308	8		13		22		20		止めねじ2本	￥220	￥169	￥169	￥186	片山チエン
+10295293	KSC1310	10		13		26		20		止めねじ2本	￥270	￥199	￥199	￥219	片山チエン
+10295302	KSC1412	12		14		26		20		止めねじ2本	￥320	￥239	￥239	￥263	片山チエン
+10295311	KSC1506	6		15		24		-		止めねじ2本	￥300	￥229	￥229	￥252	片山チエン
+10295327	KSC1508	8		15		25		24		止めねじ2本	￥330	￥249	￥249	￥274	片山チエン
+10295336	KSC1510	10		15		25		24		止めねじ2本	￥330	￥249	￥249	￥274	片山チエン
+10295345	KSC1512	12		15		28		24		止めねじ2本	￥330	￥249	￥249	￥274	片山チエン
+10295354	KSC1606	6		16		24		-		止めねじ2本	￥320	￥239	￥239	￥263	片山チエン
+10295363	KSC1608	8		16		28		24		止めねじ2本	￥330	￥259	￥259	￥285	片山チエン
+10295372	KSC1610	10		16		28		24		止めねじ2本	￥330	￥259	￥259	￥285	片山チエン
+10295381	KSC1612	12		16		28		24		止めねじ2本	￥330	￥259	￥259	￥285	片山チエン
+10295397	KSC1710	10		17		30		26		止めねじ2本	￥390	￥289	￥289	￥318	片山チエン
+10295406	KSC1712	12		17		32		26		止めねじ2本	￥390	￥289	￥289	￥318	片山チエン
+10295415	KSC1815	15		18		32		29		止めねじ2本	￥390	￥289	￥289	￥318	片山チエン
+10295424	KSC2007	7		20		30		-		止めねじ2本	￥400	￥299	￥299	￥329	片山チエン
+10295433	KSC2010	10		20		32		29		止めねじ2本	￥400	￥299	￥299	￥329	片山チエン
+10295442	KSC2012	12		20		32		29		止めねじ2本	￥400	￥299	￥299	￥329	片山チエン
+10295451	KSC2015	15		20		32		29		止めねじ2本	￥420	￥319	￥319	￥351	片山チエン
+10295467	KSC2218	18		22		38		34		止めねじ2本	￥470	￥359	￥359	￥395	片山チエン
+10295476	KSC2512	12		25		38		37		止めねじ2本	￥490	￥369	￥369	￥406	片山チエン
+10295485	KSC2515	15		25		38		37		止めねじ2本	￥490	￥369	￥369	￥406	片山チエン
+10295494	KSC2518	18		25		42		38		止めねじ2本	￥530	￥399	￥399	￥439	片山チエン
+10295503	KSC2818	18		28		45		40		止めねじ2本	￥570	￥449	￥449	￥494	片山チエン
+10295512	KSC3014	14		30		45		42		止めねじ2本	￥600	￥449	￥449	￥494	片山チエン
+10295521	KSC3016	16		30		45		42		止めねじ2本	￥600	￥449	￥449	￥494	片山チエン
+10295537	KSC3018	18		30		49		42		止めねじ2本	￥580	￥439	￥439	￥483	片山チエン
+10295546	KSC3020	20		30		49		42		止めねじ2本	￥580	￥439	￥439	￥483	片山チエン
+10295555	KSC3220	20		32		53		44		止めねじ2本	￥730	￥549	￥549	￥604	片山チエン
+10295564	KSC3515	15		35		50		47		止めねじ2本	￥730	￥549	￥549	￥604	片山チエン
+10295573	KSC3518	18		35		55		47		止めねじ2本	￥730	￥549	￥549	￥604	片山チエン
+10295582	KSC3520	20		35		59		47		止めねじ2本	￥710	￥529	￥529	￥582	片山チエン
+10295591	KSC3822	22		38		64		50		止めねじ2本	￥1,090	￥799	￥799	￥879	片山チエン
+10295607	KSC4018	18		40		60		55		止めねじ2本	￥950	￥699	￥699	￥769	片山チエン
+10295616	KSC4020	20		40		72		-		止めねじ2本	￥1,090	￥799	￥799	￥879	片山チエン
+10295625	KSC4022	22		40		72		55		止めねじ2本	￥1,090	￥839	￥839	￥923	片山チエン
+10295634	KSC4522	22		45		75		60		止めねじ2本	￥1,240	￥919	￥919	￥1,011	片山チエン
+10295643	KSC5020	20		50		70		65		止めねじ2本	￥1,240	￥919	￥919	￥1,011	片山チエン
+10295652	KSC5025	25		50		79		65		止めねじ2本	￥1,240	￥919	￥735	￥809	片山チエン
+10295661	KSC5528	28		55		81		70		止めねじ2本	￥1,510	￥969	￥969	￥1,066	片山チエン
+10295677	KSC6028	28		60		88		75		止めねじ2本	￥1,660	￥1,090	￥1,090	￥1,199	片山チエン
+10295686	KSC6528	28		65		94		85		止めねじ2本	￥2,190	￥1,490	￥1,490	￥1,639	片山チエン
+10295695	KSC7032	32		70		113		90		止めねじ2本	￥3,100	￥1,990	￥1,990	￥2,189	片山チエン
+10295704	KSC7532	32		75		119		95		止めねじ2本	￥3,390	￥2,190	￥2,190	￥2,409	片山チエン
+10295713	KSC8032	32		80		126		105		止めねじ2本	￥4,180	￥2,590	￥2,590	￥2,849	片山チエン
+
+2203.pdf 横
+深溝玉軸受  96-97
+アンギュラ玉軸受    115
+スラスト玉軸受    212
+スラスト円筒ころ軸受    297
+スラスト針状ころ軸受    300
+96,97,115,212,297,300
+
+2400.pdf 見開き2ページ, 縦x2=横
+UCS 230-231 
+ASS 242-243
+UC 214-215
+AS 226
+214,215,226,228,230,231,242,243
+
+ケンコー 天頂ミラー 107mm
+90度正立プリズム    100mm
+45度正立プリズム    120mm以上、80mm EDでは合焦しない。
+
+
